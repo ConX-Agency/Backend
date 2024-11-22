@@ -1,13 +1,12 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable import/no-extraneous-dependencies */
-
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import * as jwt from 'jsonwebtoken';
 import * as request from 'supertest';
+import '@types/jest';
 
 import { App } from 'supertest/types';
 import { ApplicationModule } from '../../app.module';
+import { describe, it } from 'node:test';
 
 /**
  * Passenger API end-to-end tests
