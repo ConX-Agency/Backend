@@ -2,9 +2,9 @@ import { INestApplication } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-
 import { ApplicationModule } from './modules/app.module';
 import { CommonModule, LogInterceptor } from './modules/common';
+import multipart from '@fastify/multipart';
 
 /**
  * these are API defaults that can be changed using environment variables,
@@ -60,6 +60,7 @@ async function bootstrap(): Promise<void> {
     if (!process.env.SWAGGER_ENABLE || process.env.SWAGGER_ENABLE === '1') createSwagger(app);
     const logInterceptor = app.select(CommonModule).get(LogInterceptor);
     app.useGlobalInterceptors(logInterceptor);
+    await app.register(multipart as any);
     await app.listen(process.env.API_PORT || API_DEFAULT_PORT);
 }
 

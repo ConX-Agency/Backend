@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common';
 import { ClientsData, ClientsInput } from '../model';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { CustomThrowError } from '../../common/controller/config';
 
 @Injectable()
 export class ClientsService {
@@ -25,8 +27,24 @@ export class ClientsService {
      * @returns new client data created in the database
      */
     public async create(data: ClientsInput): Promise<ClientsData> {
-        const newClient = await this.prismaService.clients.create({ data });
-        return new ClientsData(newClient);
+        try {
+            const newClient = await this.prismaService.clients.create({ data });
+            return new ClientsData(newClient);
+        } catch (error) {
+            if (error instanceof PrismaClientKnownRequestError) {
+                // known prisma client error
+                throw new CustomThrowError(
+                    error.code,
+                    error.message,
+                    error.meta
+                );
+            }
+            // unknown error
+            throw new CustomThrowError(
+                "-1",
+                "An unexpected error has occurred!"
+            );
+        }
     }
 
 }
