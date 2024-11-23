@@ -1,4 +1,4 @@
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -60,6 +60,7 @@ async function bootstrap(): Promise<void> {
     if (!process.env.SWAGGER_ENABLE || process.env.SWAGGER_ENABLE === '1') createSwagger(app);
     const logInterceptor = app.select(CommonModule).get(LogInterceptor);
     app.useGlobalInterceptors(logInterceptor);
+    app.useGlobalPipes(new ValidationPipe({ transform: true }));
     await app.register(multipart as any);
     await app.listen(process.env.API_PORT || API_DEFAULT_PORT);
 }

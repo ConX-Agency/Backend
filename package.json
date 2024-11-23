@@ -28,6 +28,8 @@
     "@nestjs/terminus": "^10.2.3",
     "@nestjs/testing": "^10.4.8",
     "@prisma/client": "^5.22.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
     "fastify": "^4.28.1",
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",

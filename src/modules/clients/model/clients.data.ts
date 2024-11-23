@@ -46,5 +46,4 @@ export class ClientsData {
         this.category = entity.category;
         this.package = entity.package;
     }
-
 }
