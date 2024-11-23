@@ -1,11 +1,8 @@
 import * as winston from 'winston';
 
 export class LoggerService {
-
     private readonly instance: winston.Logger;
-
     public constructor() {
-
         const format = this.isProductionEnv() ?
             winston.format.combine(
                 winston.format.timestamp(),
@@ -43,5 +40,4 @@ export class LoggerService {
     private isProductionEnv(): boolean {
         return process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging';
     }
-
 }
