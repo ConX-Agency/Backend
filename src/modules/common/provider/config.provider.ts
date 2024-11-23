@@ -4,10 +4,8 @@ import { Service } from '../../tokens';
 import { Config } from '../model';
 
 export const configProvider = {
-
     provide: Service.CONFIG,
     useFactory: (): Config => {
-
         const env = process.env;
         const validationSchema = Joi.object<Config>().unknown().keys({
             API_PORT: Joi.number().required(),
@@ -16,7 +14,6 @@ export const configProvider = {
             JWT_SECRET: Joi.string().required(),
             JWT_ISSUER: Joi.string().required(),
             HEALTH_TOKEN: Joi.string().required(),
-            PASSENGERS_ALLOWED: Joi.string().valid('yes', 'no').required()
         });
 
         const result = validationSchema.validate(env);
@@ -26,5 +23,4 @@ export const configProvider = {
 
         return result.value;
     }
-
 };

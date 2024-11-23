@@ -2,7 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Clients } from '@prisma/client';
 
 export class ClientsData {
-
     public static readonly MAX_LENGTH = 100;
 
     @ApiProperty({ description: 'Client ID', example: '36635263' })
@@ -47,5 +46,4 @@ export class ClientsData {
         this.category = entity.category;
         this.package = entity.package;
     }
-
 }

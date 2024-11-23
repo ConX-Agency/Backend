@@ -12,6 +12,6 @@ export class ClientsInput extends PickType(
         'additional_contact_number',
         'industry',
         'category',
-        'package'
+        'package',
     ] as const
 ) { }

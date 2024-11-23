@@ -1,47 +1,117 @@
-import { Body, Controller, Get, HttpStatus, Inject, Post, PreconditionFailedException, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-
-import { Config, LoggerService, RestrictedGuard } from '../../common';
-import { Service } from '../../tokens';
-
-import { ClientsPipe } from '../flow';
+import { BadRequestException, Body, Controller, Delete, Get, HttpStatus, Param, ParseIntPipe, Patch, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { LoggerService } from '../../common';
 import { ClientsData, ClientsInput } from '../model';
 import { ClientsService } from '../service';
+import { ClientsPipe } from '../flow';
+import { CustomThrowError } from '../../common/controller/config';
+import { ErrorData } from '../../common/model/config';
+import { FileFieldsInterceptor, MemoryStorageFile } from '@blazity/nest-file-fastify';
+import { UpdateClientDto } from '../model/clients.dto';
 
 @Controller('clients')
-@ApiTags('clients')
+@ApiTags('Clients')
 @ApiBearerAuth()
 export class ClientsController {
-
     public constructor(
-        @Inject(Service.CONFIG)
-        private readonly config: Config,
         private readonly logger: LoggerService,
-        private readonly clientService: ClientsService
+        private readonly clientsService: ClientsService
     ) { }
 
     @Get()
-    @ApiOperation({ summary: 'Find clients' })
-    @ApiResponse({ status: HttpStatus.OK, isArray: true, type: ClientsData })
-    public async find(): Promise<ClientsData[]> {
+    @ApiOperation({ summary: 'Get all clients' })
+    @ApiResponse({ status: HttpStatus.OK, isArray: true, type: Array<ClientsData> })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
+    public async getAll(): Promise<ClientsData[]> {
+        try {
+            return await this.clientsService.getAll();
+        } catch (error: unknown) {
+            if (error instanceof CustomThrowError) {
+                const { message, meta } = error;
+                throw new BadRequestException({ message, meta });
+            }
+            throw new BadRequestException(error);
+        }
+    }
 
-        return this.clientService.find();
+    @Get(':id')
+    @ApiOperation({ summary: 'Get client by id' })
+    @ApiResponse({ status: HttpStatus.OK, isArray: true, type: ClientsData })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
+    public async getById(
+        @Param('id', ParseIntPipe) id: number,
+    ): Promise<ClientsData | null> {
+        try {
+            const client = await this.clientsService.getById(id);
+            if (!client) throw new BadRequestException(`Client with ID ${id} not found!`);
+            return client;
+        } catch (error: unknown) {
+            if (error instanceof CustomThrowError) {
+                const { message, meta } = error;
+                throw new BadRequestException({ message, meta });
+            }
+            throw new BadRequestException(error);
+        }
     }
 
     @Post()
-    @UseGuards(RestrictedGuard)
-    @ApiOperation({ summary: 'Create clients' })
+    // @UseGuards(RestrictedGuard)
+    @ApiConsumes('multipart/form-data')
+    @ApiOperation({ summary: 'Register new client' })
     @ApiResponse({ status: HttpStatus.CREATED, type: ClientsData })
-    public async create(@Body(ClientsPipe) input: ClientsInput): Promise<ClientsData> {
-
-        if (this.config.PASSENGERS_ALLOWED === 'no') {
-            throw new PreconditionFailedException('Not allowed to onboard clients');
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
+    @UseInterceptors(FileFieldsInterceptor([{ name: 'image', maxCount: 1 }]))
+    public async register(
+        @Body(ClientsPipe) registerClientDto: ClientsInput,
+        @UploadedFiles() files: { image?: MemoryStorageFile },
+    ): Promise<ClientsData> {
+        try {
+            const newClient = await this.clientsService.create(registerClientDto);
+            this.logger.info(`Registered new client with ID ${newClient.client_id}!`);
+            return newClient;
+        } catch (error: unknown) {
+            if (error instanceof CustomThrowError) {
+                const { message, meta } = error;
+                throw new BadRequestException({ message, meta });
+            }
+            throw new BadRequestException(error);
         }
-
-        const clients = await this.clientService.create(input);
-        this.logger.info(`Created new client with ID ${clients.client_id}`);
-
-        return clients;
     }
 
+    @Patch(':id')
+    // @UseGuards(RestrictedGuard)
+    @ApiOperation({ summary: 'Update client by ID' })
+    @ApiResponse({ status: HttpStatus.OK, type: ClientsData, description: 'Update client', })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData, })
+    @UseInterceptors(FileFieldsInterceptor([{ name: 'image', maxCount: 1 }]))
+    public async update(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() updateClientDto: UpdateClientDto,
+        @UploadedFiles() files: { image?: MemoryStorageFile },
+    ): Promise<ClientsData> {
+        try {
+            const updatedClient = await this.clientsService.update(id, updateClientDto);
+            if (!updatedClient) throw new BadRequestException(`Client with ID ${id} not found!`);
+            return updatedClient;
+        } catch (error) {
+            throw new BadRequestException(error);
+        }
+    }
+
+    @Delete(':id')
+    // @UseGuards(RestrictedGuard)
+    @ApiOperation({ summary: 'Delete client by ID' })
+    @ApiResponse({ status: HttpStatus.OK, description: 'Delete client' })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData, })
+    public async delete(
+        @Param('id', ParseIntPipe) id: number
+    ): Promise<void> {
+        try {
+            const success = await this.clientsService.delete(id);
+            if (!success) throw new BadRequestException(`Client with ID ${id} not found`);
+            return;
+        } catch (error) {
+            throw new BadRequestException(error);
+        }
+    }
 }

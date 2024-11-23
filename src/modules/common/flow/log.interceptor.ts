@@ -7,16 +7,13 @@ import { LoggerService } from '../provider';
 
 @Injectable()
 export class LogInterceptor implements NestInterceptor {
-
     public constructor(
         private readonly logger: LoggerService
     ) { }
 
     public intercept(context: ExecutionContext, next: CallHandler): Observable<FastifyReply> {
-
         const startTime = new Date().getTime();
         const request = context.switchToHttp().getRequest<FastifyRequest>();
-
         return next.handle().pipe(
             map((data: FastifyReply) => {
                 const responseStatus = (request.method === 'POST') ? HttpStatus.CREATED : HttpStatus.OK;
