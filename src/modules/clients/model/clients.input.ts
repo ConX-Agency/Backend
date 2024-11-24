@@ -13,5 +13,11 @@ export class ClientsInput extends PickType(
         'industry',
         'category',
         'package',
+        'country',
+        'city',
+        'state',
+        'postcode',
+        'address',
+        'is_halal',
     ] as const
 ) { }

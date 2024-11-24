@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common';
-import { ClientsData, ClientsInput } from '../model';
+import { ClientsData } from '../model';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { CustomThrowError } from '../../common/controller/config';
-import { UpdateClientDto } from '../model/clients.dto';
+import { CreateClientDto, UpdateClientDto } from '../model/clients.dto';
 
 @Injectable()
 export class ClientsService {
@@ -32,7 +32,8 @@ export class ClientsService {
             // unknown error
             throw new CustomThrowError(
                 "-1",
-                "An unexpected error has occurred!"
+                error.message,
+                error.meta
             );
         }
     }
@@ -58,7 +59,8 @@ export class ClientsService {
             // unknown error
             throw new CustomThrowError(
                 "-1",
-                "An unexpected error has occurred!"
+                error.message,
+                error.meta
             );
         }
     }
@@ -69,7 +71,7 @@ export class ClientsService {
      * @param data Client details
      * @returns New client data created in the database
      */
-    public async create(data: ClientsInput): Promise<ClientsData> {
+    public async create(data: CreateClientDto): Promise<ClientsData> {
         try {
             const newClient = await this.prismaService.clients.create({ data });
             return new ClientsData(newClient);
@@ -85,13 +87,14 @@ export class ClientsService {
             // unknown error
             throw new CustomThrowError(
                 "-1",
-                "An unexpected error has occurred!"
+                error.message,
+                error.meta
             );
         }
     }
 
     /**
-     * Ipdate client record
+     * Update client record
      *
      * @param clientId Client id
      * @param updateClientDto New client details
@@ -118,7 +121,8 @@ export class ClientsService {
             // unknown error
             throw new CustomThrowError(
                 "-1",
-                "An unexpected error has occurred!"
+                error.message,
+                error.meta
             );
         }
     }

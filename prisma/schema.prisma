@@ -15,32 +15,20 @@ model Clients {
   client_id                 Int     @id @default(autoincrement())
   company_name              String  @unique
   person_in_charge_name     String
-  company_email             String  @unique
+  company_email             String? @unique
   pic_email                 String  @unique
   contact_number            String
-  additional_contact_number String
-  industry                  String
-  category                  String
+  additional_contact_number String?
+  industry                  String?
+  category                  String?
   package                   String
-  address                   Clients_Location[]
-  campaigns                 Campaign[]
-}
-
-model Location {
-  location_id               Int     @id @default(autoincrement())
   country                   String
-  city                      String
+  city                      String?
   state                     String
-  postcode                  String
-  clients                   Clients_Location[]
-}
-
-model Clients_Location {
-  client_location_id        Int     @id @default(autoincrement())
-  client_id                 Int     
-  client                    Clients @relation(fields: [client_id], references: [client_id])
-  location_id               Int     
-  location                  Location @relation(fields: [location_id], references: [location_id])
+  postcode                  String?
+  address                   String
+  is_halal                  Boolean
+  campaigns                 Campaign[]
 }
 
 model Influencer {
@@ -50,11 +38,12 @@ model Influencer {
   contact_number            String
   email_address             String  @unique
   additional_contact_number String
-  home_address              String
+  home_address              String?
   country                   String
-  city                      String
+  city                      String?
   state                     String
-  postcode                  String
+  postcode                  String?
+  diet_preference           String?
   accounts_id               Int
   accounts                  Accounts @relation(fields: [accounts_id], references: [accounts_id])
   influencer_campaign       Influencers_Campaign[]
@@ -90,22 +79,15 @@ model Influencers_Campaign {
   campaign                  Campaign @relation(fields: [campaign_id], references: [campaign_id])
 }
 
-model Platforms {
-  platform_id               Int     @id @default(autoincrement())
-  platform_name             String
-  platform_type             String
-  accounts                  Accounts[]
-}
-
 model Accounts {
   accounts_id               Int     @id @default(autoincrement())
-  platform_id               Int
+  platform_name             String
+  platform_type             String
   social_media_url          String
   media_country             String
-  follower_range            String
+  followers                 String
   industry                  String
   active_status             String
-  platforms                 Platforms @relation(fields: [platform_id], references: [platform_id])
   influencer                Influencer[]
 }
 
