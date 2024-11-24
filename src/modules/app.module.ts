@@ -1,14 +1,14 @@
 import { Module } from '@nestjs/common';
 
 import { CommonModule } from './common';
-// import { PassengerModule } from './passenger/passenger.module';
 import { ClientsModule } from './clients/clients.module';
+import { InfluencersModule } from './influencers/influencers.module';
 
 @Module({
     imports: [
         CommonModule,
-        // PassengerModule
-        ClientsModule
+        ClientsModule,
+        InfluencersModule
     ]
 })
-export class ApplicationModule {}
+export class ApplicationModule { }

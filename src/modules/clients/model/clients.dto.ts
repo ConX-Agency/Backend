@@ -11,8 +11,7 @@ export class GetClientDto {
     @IsString()
     person_in_charge_name: string;
 
-    @ApiProperty({ description: 'Company Email', example: 'traverseX@mail.com', required: false })
-    @IsOptional()
+    @ApiProperty({ description: 'Company Email', example: 'traverseX@mail.com' })
     @IsEmail()
     company_email: string | null;
 
@@ -25,17 +24,14 @@ export class GetClientDto {
     contact_number: string;
 
     @ApiProperty({ description: 'Additional Contact Number', example: '+6011111111' })
-    @IsOptional()
     @IsString()
     additional_contact_number: string | null;
 
-    @ApiProperty({ description: 'Industry', example: 'Food & Beverages', required: false })
-    @IsOptional()
+    @ApiProperty({ description: 'Industry', example: 'Food & Beverages' })
     @IsString()
     industry: string | null;
 
-    @ApiProperty({ description: 'Category', example: 'Strategic', required: false })
-    @IsOptional()
+    @ApiProperty({ description: 'Category', example: 'Strategic' })
     @IsString()
     category: string | null;
 
@@ -47,8 +43,7 @@ export class GetClientDto {
     @IsString()
     country: string;
 
-    @ApiProperty({ description: 'City', example: 'Kuala Lumpur', required: false })
-    @IsOptional()
+    @ApiProperty({ description: 'City', example: 'Kuala Lumpur' })
     @IsString()
     city: string | null;
 
@@ -56,8 +51,7 @@ export class GetClientDto {
     @IsString()
     state: string;
 
-    @ApiProperty({ description: 'Postcode', example: '51000', required: false })
-    @IsOptional()
+    @ApiProperty({ description: 'Postcode', example: '51000' })
     @IsString()
     postcode: string | null;
 
