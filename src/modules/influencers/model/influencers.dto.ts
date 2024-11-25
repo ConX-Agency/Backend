@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, IsEmail, IsArray } from 'class-validator';
+import { IsOptional, IsString, IsEmail, IsArray, IsNumber } from 'class-validator';
 
 export class GetInfluencerDto {
     @ApiProperty({ description: 'Full Name', example: 'James Chong' })
@@ -197,13 +197,9 @@ export class GetAccountDto {
 }
 
 export class CreateAccountDto {
-    @ApiProperty({ description: 'Platform Name', example: 'Instagram' })
-    @IsString()
-    platform_name: string;
-
-    @ApiProperty({ description: 'Platform Type', example: 'Social Media' })
-    @IsString()
-    platform_type: string;
+    @ApiProperty({ description: 'Platform ID' })
+    @IsNumber()
+    platform_id: number;
 
     @ApiProperty({ description: 'Social Media URL', example: '[Instagram URL]' })
     @IsString()
@@ -227,31 +223,33 @@ export class CreateAccountDto {
 }
 
 export class UpdateAccountDto {
-    @ApiProperty({ description: 'Platform Name', example: 'Instagram' })
-    @IsString()
-    platform_name: string;
+    @ApiProperty({ description: 'Platform ID', required: false })
+    @IsOptional()
+    @IsNumber()
+    platform_id: number;
 
-    @ApiProperty({ description: 'Platform Type', example: 'Social Media' })
-    @IsString()
-    platform_type: string;
-
-    @ApiProperty({ description: 'Social Media URL', example: '[Instagram URL]' })
+    @ApiProperty({ description: 'Social Media URL', example: '[Instagram URL]', required: false })
+    @IsOptional()
     @IsString()
     social_media_url: string;
 
-    @ApiProperty({ description: 'Media Country', example: 'Malaysia' })
+    @ApiProperty({ description: 'Media Country', example: 'Malaysia', required: false })
+    @IsOptional()
     @IsString()
     media_country: string;
 
-    @ApiProperty({ description: 'Followers', example: '16k' })
+    @ApiProperty({ description: 'Followers', example: '16k', required: false })
+    @IsOptional()
     @IsString()
     followers: string;
 
-    @ApiProperty({ description: 'Industry', example: 'Food,Lifestyles' })
+    @ApiProperty({ description: 'Industry', example: 'Food,Lifestyles', required: false })
+    @IsOptional()
     @IsString()
     industry: string;
 
-    @ApiProperty({ description: 'Active Status', example: 'Active' })
+    @ApiProperty({ description: 'Active Status', example: 'Active', required: false })
+    @IsOptional()
     @IsString()
     active_status: string;
 }

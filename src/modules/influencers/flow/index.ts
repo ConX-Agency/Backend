@@ -1,1 +1,1 @@
-export { InfluencersPipe } from './influencers.pipe';
+export { InfluencersPipe, AccountsPipe } from './influencers.pipe';

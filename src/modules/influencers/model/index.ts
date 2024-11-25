@@ -1,2 +1,2 @@
-export { InfluencersInput as ClientsInput } from './influencers.input';
-export { InfluencersData as ClientsData } from './influencers.data';
+export { InfluencersInput, AccountsInput } from './influencers.input';
+export { InfluencersData, AccountsData } from './influencers.data';

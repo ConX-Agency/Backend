@@ -22,7 +22,6 @@ export class InfluencersData {
         this.preferred_name = entity.preferred_name;
         this.contact_number = entity.contact_number;
         this.email_address = entity.email_address;
-        this.contact_number = entity.contact_number;
         this.additional_contact_number = entity.additional_contact_number;
         this.home_address = entity.home_address ?? null;
         this.country = entity.country;
