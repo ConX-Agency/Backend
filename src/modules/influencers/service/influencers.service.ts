@@ -3,6 +3,8 @@ import { PrismaService } from '../../common';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { CustomThrowError } from '../../common/controller/config';
 import { CreateAccountDto, CreateInfluencerDto, GetAccountDto, GetInfluencerDto } from '../model/influencers.dto';
+import { Accounts, Platform } from '@prisma/client';
+import { InfluencersData } from '../model';
 
 @Injectable()
 export class InfluencersService {
@@ -11,58 +13,93 @@ export class InfluencersService {
     ) { }
 
     /**
-     * Get all clients in the database
+     * Get all influencers (and their accounts) in the database
      *
-     * @returns Clients list
+     * @returns Influencers list
      */
-    // public async getAll(): Promise<InfluencersData[]> {
-    //     try {
-    //         const clients = await this.prismaService.clients.findMany({});
-    //         return clients.map(client => new InfluencersData(client));
-    //     } catch (error) {
-    //         if (error instanceof PrismaClientKnownRequestError) {
-    //             // known prisma client error
-    //             throw new CustomThrowError(
-    //                 error.code,
-    //                 error.message,
-    //                 error.meta
-    //             );
-    //         }
-    //         // unknown error
-    //         throw new CustomThrowError(
-    //             "-1",
-    //             error.message,
-    //             error.meta
-    //         );
-    //     }
-    // }
+    public async getAll(): Promise<GetInfluencerDto[]> {
+        try {
+            const influencersData: GetInfluencerDto[] = [];
+            const influencers = await this.prismaService.influencer.findMany({}) as InfluencersData[];
+
+            for (let influencer of influencers) {
+                const accountsData: GetAccountDto[] = [];
+                for (let accountId of influencer.accounts_id) {
+                    const account = await this.prismaService.accounts.findUnique({ where: { account_id: accountId } }) as Accounts;
+                    const platform = await this.prismaService.platform.findUnique({ where: { platform_id: account?.platform_id } }) as Platform;
+                    accountsData.push({
+                        ...account,
+                        platform_name: platform?.platform_name,
+                        platform_type: platform?.platform_type
+                    })
+                }
+                influencersData.push({
+                    ...influencer,
+                    accounts: accountsData
+                });
+            }
+
+            return influencersData;
+        } catch (error) {
+            if (error instanceof PrismaClientKnownRequestError) {
+                // known prisma client error
+                throw new CustomThrowError(
+                    error.code,
+                    error.message,
+                    error.meta
+                );
+            }
+            // unknown error
+            throw new CustomThrowError(
+                "-1",
+                error.message,
+                error.meta
+            );
+        }
+    }
 
     /**
-     * Get client in the database by id
+     * Get influencer (and his / her accounts) in the database by id
      * 
-     * @returns Client data
+     * @returns Influencer data
      */
-    // public async getById(clientId: number): Promise<InfluencersData | null> {
-    //     try {
-    //         const client = await this.prismaService.clients.findUnique({ where: { client_id: clientId } });
-    //         return client;
-    //     } catch (error) {
-    //         if (error instanceof PrismaClientKnownRequestError) {
-    //             // known prisma client error
-    //             throw new CustomThrowError(
-    //                 error.code,
-    //                 error.message,
-    //                 error.meta
-    //             );
-    //         }
-    //         // unknown error
-    //         throw new CustomThrowError(
-    //             "-1",
-    //             error.message,
-    //             error.meta
-    //         );
-    //     }
-    // }
+    public async getById(influencerId: number): Promise<GetInfluencerDto | null> {
+        try {
+            const influencer = await this.prismaService.influencer.findUnique({ where: { influencer_id: influencerId } }) as InfluencersData;
+            const accountsData: GetAccountDto[] = [];
+
+            if (!influencer) return null;
+            for (let accountId of influencer.accounts_id) {
+                const account = await this.prismaService.accounts.findUnique({ where: { account_id: accountId } }) as Accounts;
+                const platform = await this.prismaService.platform.findUnique({ where: { platform_id: account?.platform_id } }) as Platform;
+                accountsData.push({
+                    ...account,
+                    platform_name: platform?.platform_name,
+                    platform_type: platform?.platform_type
+                });
+            }
+
+            return {
+                ...influencer,
+                accounts: accountsData
+            } as GetInfluencerDto;
+        } catch (error) {
+            if (error instanceof PrismaClientKnownRequestError) {
+                // known prisma client error
+                throw new CustomThrowError(
+                    error.code,
+                    error.message,
+                    error.meta
+                );
+            }
+            // unknown error
+            throw new CustomThrowError(
+                "-1",
+                error.message,
+                error.meta
+            );
+        }
+    }
 
     /**
      * Create a new influencer (with account) record
@@ -79,14 +116,14 @@ export class InfluencersService {
             const accountsData = JSON.parse(accounts);
             for (let i = 0; i < accountsData.length; i++) {
                 const newAccountData = accountsData[i] as CreateAccountDto;
-                const newAccount = await this.prismaService.accounts.create({ data: newAccountData });
+                const newAccount = await this.prismaService.accounts.create({ data: newAccountData }) as Accounts;
                 influencerAccountIds.push(newAccount.account_id);
 
-                const platform = await this.prismaService.platform.findUnique({ where: { platform_id: newAccount.platform_id } });
+                const platform = await this.prismaService.platform.findUnique({ where: { platform_id: newAccount.platform_id } }) as Platform;
                 influencerAccounts.push({
                     ...newAccount,
-                    platform_name: platform?.platform_name ?? "-",
-                    platform_type: platform?.platform_type ?? "-"
+                    platform_name: platform?.platform_name,
+                    platform_type: platform?.platform_type
                 });
             }
 

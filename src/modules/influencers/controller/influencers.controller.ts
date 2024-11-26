@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, HttpStatus, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, HttpStatus, Param, ParseIntPipe, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LoggerService } from '../../common';
 import { InfluencersService } from '../service';
@@ -17,41 +17,41 @@ export class InfluencersController {
         private readonly influencersService: InfluencersService
     ) { }
 
-    // @Get()
-    // @ApiOperation({ summary: 'Get all clients' })
-    // @ApiResponse({ status: HttpStatus.OK, isArray: true, type: Array<GetInfluencerDto> })
-    // @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
-    // public async getAll(): Promise<GetInfluencerDto[]> {
-    //     try {
-    //         return await this.clientsService.getAll();
-    //     } catch (error: unknown) {
-    //         if (error instanceof CustomThrowError) {
-    //             const { message, meta } = error;
-    //             throw new BadRequestException({ message, meta });
-    //         }
-    //         throw new BadRequestException(error);
-    //     }
-    // }
+    @Get()
+    @ApiOperation({ summary: 'Get all influencers' })
+    @ApiResponse({ status: HttpStatus.OK, isArray: true, type: Array<GetInfluencerDto> })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
+    public async getAll(): Promise<GetInfluencerDto[]> {
+        try {
+            return await this.influencersService.getAll();
+        } catch (error: unknown) {
+            if (error instanceof CustomThrowError) {
+                const { message, meta } = error;
+                throw new BadRequestException({ message, meta });
+            }
+            throw new BadRequestException(error);
+        }
+    }
 
-    // @Get(':id')
-    // @ApiOperation({ summary: 'Get client by id' })
-    // @ApiResponse({ status: HttpStatus.OK, isArray: true, type: GetInfluencerDto })
-    // @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
-    // public async getById(
-    //     @Param('id', ParseIntPipe) id: number,
-    // ): Promise<GetInfluencerDto | null> {
-    //     try {
-    //         const client = await this.clientsService.getById(id);
-    //         if (!client) throw new BadRequestException(`Client with ID ${id} not found!`);
-    //         return client;
-    //     } catch (error: unknown) {
-    //         if (error instanceof CustomThrowError) {
-    //             const { message, meta } = error;
-    //             throw new BadRequestException({ message, meta });
-    //         }
-    //         throw new BadRequestException(error);
-    //     }
-    // }
+    @Get(':id')
+    @ApiOperation({ summary: 'Get influencer by id' })
+    @ApiResponse({ status: HttpStatus.OK, isArray: true, type: GetInfluencerDto })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
+    public async getById(
+        @Param('id', ParseIntPipe) id: number,
+    ): Promise<GetInfluencerDto | null> {
+        try {
+            const influencer = await this.influencersService.getById(id);
+            if (!influencer) throw new BadRequestException(`Influencer with ID ${id} not found!`);
+            return influencer;
+        } catch (error: unknown) {
+            if (error instanceof CustomThrowError) {
+                const { message, meta } = error;
+                throw new BadRequestException({ message, meta });
+            }
+            throw new BadRequestException(error);
+        }
+    }
 
     @Post()
     // @UseGuards(RestrictedGuard)
