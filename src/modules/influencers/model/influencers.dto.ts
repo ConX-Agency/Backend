@@ -2,6 +2,10 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional, IsString, IsEmail, IsArray, IsNumber } from 'class-validator';
 
 export class GetInfluencerDto {
+    @ApiProperty({ description: 'Influencer ID', example: '1' })
+    @IsNumber()
+    influencer_id: number;
+
     @ApiProperty({ description: 'Full Name', example: 'James Chong' })
     @IsString()
     full_name: string;
@@ -25,7 +29,7 @@ export class GetInfluencerDto {
 
     @ApiProperty({ description: 'Address', example: '[Home address]' })
     @IsString()
-    home_address: string;
+    home_address: string | null;
 
     @ApiProperty({ description: 'Country', example: 'Malaysia' })
     @IsString()
@@ -33,7 +37,7 @@ export class GetInfluencerDto {
 
     @ApiProperty({ description: 'City', example: 'Kuala Lumpur' })
     @IsString()
-    city: string;
+    city: string | null;
 
     @ApiProperty({ description: 'State', example: 'Selangor' })
     @IsString()
@@ -41,11 +45,11 @@ export class GetInfluencerDto {
 
     @ApiProperty({ description: 'Postcode', example: '51000' })
     @IsString()
-    postcode: string;
+    postcode: string | null;
 
     @ApiProperty({ description: 'Diet Preference', example: 'Vegan' })
     @IsString()
-    diet_preference: string;
+    diet_preference: string | null;
 
     @ApiProperty({ description: 'Accounts' })
     @IsArray()
@@ -66,7 +70,6 @@ export class CreateInfluencerDto {
     contact_number: string;
 
     @ApiProperty({ description: 'Email Address', example: 'james@mail.com' })
-    @IsOptional()
     @IsEmail()
     email_address: string;
 
@@ -98,9 +101,9 @@ export class CreateInfluencerDto {
     @IsString()
     diet_preference: string | null;
 
-    @ApiProperty({ description: 'Account Ids' })
-    @IsArray()
-    accounts_id: number[]
+    @ApiProperty({ description: 'Account Data Array (CreateAccountDto type) (Need to JSON Stringify)' })
+    @IsString()
+    accounts: string;
 }
 
 export class UpdateInfluencerDto {
@@ -159,11 +162,6 @@ export class UpdateInfluencerDto {
     @IsOptional()
     @IsString()
     diet_preference?: string;
-
-    @ApiProperty({ description: 'Account Ids', required: false })
-    @IsOptional()
-    @IsArray()
-    accounts_id?: number[]
 }
 
 export class GetAccountDto {

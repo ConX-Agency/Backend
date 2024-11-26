@@ -18,7 +18,7 @@ export class InfluencersPipe extends JoiValidationPipe {
             state: Joi.string().required().max(InfluencersData.MAX_LENGTH),
             postcode: Joi.string().max(InfluencersData.MAX_LENGTH),
             diet_preference: Joi.string().max(InfluencersData.MAX_LENGTH),
-            accounts_id: Joi.array().required().max(InfluencersData.MAX_LENGTH)
+            accounts: Joi.string()
         });
     }
 }
