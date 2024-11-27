@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, HttpStatus, Param, ParseIntPipe, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, HttpStatus, Param, ParseIntPipe, Patch, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LoggerService } from '../../common';
 import { InfluencersService } from '../service';
@@ -6,7 +6,7 @@ import { InfluencersPipe } from '../flow';
 import { CustomThrowError } from '../../common/controller/config';
 import { ErrorData } from '../../common/model/config';
 import { FileFieldsInterceptor, MemoryStorageFile } from '@blazity/nest-file-fastify';
-import { CreateInfluencerDto, GetInfluencerDto } from '../model/influencers.dto';
+import { CreateInfluencerDto, GetInfluencerDto, UpdateInfluencerDto } from '../model/influencers.dto';
 
 @Controller('influencers')
 @ApiTags('Influencers')
@@ -77,40 +77,41 @@ export class InfluencersController {
         }
     }
 
-    // @Patch(':id')
-    // // @UseGuards(RestrictedGuard)
-    // @ApiOperation({ summary: 'Update client by ID' })
-    // @ApiResponse({ status: HttpStatus.OK, type: UpdateInfluencerDto, description: 'Update client', })
-    // @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData, })
-    // @UseInterceptors(FileFieldsInterceptor([{ name: 'image', maxCount: 1 }]))
-    // public async update(
-    //     @Param('id', ParseIntPipe) id: number,
-    //     @Body() updateClientDto: UpdateInfluencerDto,
-    //     @UploadedFiles() files: { image?: MemoryStorageFile },
-    // ): Promise<GetInfluencerDto> {
-    //     try {
-    //         const updatedClient = await this.clientsService.update(id, updateClientDto);
-    //         if (!updatedClient) throw new BadRequestException(`Client with ID ${id} not found!`);
-    //         return updatedClient;
-    //     } catch (error) {
-    //         throw new BadRequestException(error);
-    //     }
-    // }
+    @Patch(':id')
+    // @UseGuards(RestrictedGuard)
+    @ApiOperation({ summary: 'Update client by ID' })
+    @ApiResponse({ status: HttpStatus.OK, type: UpdateInfluencerDto, description: 'Update influencer', })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData, })
+    @UseInterceptors(FileFieldsInterceptor([{ name: 'image', maxCount: 1 }]))
+    public async update(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() updateInfluencerDto: UpdateInfluencerDto,
+        @UploadedFiles() files: { image?: MemoryStorageFile },
+    ): Promise<GetInfluencerDto> {
+        try {
+            const updatedInfluencer = await this.influencersService.update(id, updateInfluencerDto);
+            if (!updatedInfluencer) throw new BadRequestException(`Influencer with ID ${id} not found!`);
+            return updatedInfluencer;
+        } catch (error) {
+            throw new BadRequestException(error);
+        }
+    }
 
-    // @Delete(':id')
-    // // @UseGuards(RestrictedGuard)
-    // @ApiOperation({ summary: 'Delete client by ID' })
-    // @ApiResponse({ status: HttpStatus.OK, description: 'Delete client' })
-    // @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData, })
-    // public async delete(
-    //     @Param('id', ParseIntPipe) id: number
-    // ): Promise<void> {
-    //     try {
-    //         const success = await this.clientsService.delete(id);
-    //         if (!success) throw new BadRequestException(`Client with ID ${id} not found`);
-    //         return;
-    //     } catch (error) {
-    //         throw new BadRequestException(error);
-    //     }
-    // }
+    @Delete(':id')
+    // @UseGuards(RestrictedGuard)
+    @ApiOperation({ summary: 'Delete influencer by ID' })
+    @ApiResponse({ status: HttpStatus.OK, description: 'Delete influencer' })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData, })
+    public async delete(
+        @Param('id', ParseIntPipe) id: number
+    ): Promise<void> {
+        try {
+            const success = await this.influencersService.delete(id);
+            if (!success) throw new BadRequestException(`Influencer with ID ${id} not found`);
+            return;
+        } catch (error) {
+            throw new BadRequestException(error);
+        }
+    }
 }
+
