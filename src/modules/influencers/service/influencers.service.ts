@@ -296,4 +296,27 @@ export class InfluencersService {
             );
         }
     }
+
+    /**
+     * Delete account (for influencer) record
+     *
+     * @param accountId Account id
+     * @returns Status of account deletion
+     */
+    public async deleteAccount(accountId: number): Promise<boolean> {
+        const existingAccount = await this.prismaService.accounts.findUnique({ where: { account_id: accountId } }) as Accounts;
+        if (!existingAccount) return false;
+
+        const allInfluencers = await this.prismaService.influencer.findMany({}) as Influencer[];
+        for (let influencer of allInfluencers) {
+            const indexOfAccountId = influencer.accounts_id.indexOf(existingAccount.account_id);
+            if (indexOfAccountId >= 0) {
+                influencer.accounts_id.splice(indexOfAccountId, 1);
+                await this.prismaService.influencer.update({ where: { influencer_id: influencer.influencer_id }, data: { accounts_id: influencer.accounts_id } })
+            }
+        }
+
+        await this.prismaService.accounts.delete({ where: { account_id: accountId } });
+        return true;
+    }
 }

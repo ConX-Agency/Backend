@@ -33,16 +33,16 @@ export class InfluencersController {
         }
     }
 
-    @Get(':id')
+    @Get(':influencerId')
     @ApiOperation({ summary: 'Get influencer by ID' })
     @ApiResponse({ status: HttpStatus.OK, isArray: true, type: GetInfluencerDto, description: "Get influencer by ID" })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
     public async getById(
-        @Param('id', ParseIntPipe) id: number,
+        @Param('influencerId', ParseIntPipe) influencerId: number,
     ): Promise<GetInfluencerDto | null> {
         try {
-            const influencer = await this.influencersService.getById(id);
-            if (!influencer) throw new BadRequestException(`Influencer with ID ${id} not found!`);
+            const influencer = await this.influencersService.getById(influencerId);
+            if (!influencer) throw new BadRequestException(`Influencer with ID ${influencerId} not found!`);
             return influencer;
         } catch (error: unknown) {
             if (error instanceof CustomThrowError) {
@@ -77,20 +77,20 @@ export class InfluencersController {
         }
     }
 
-    @Patch(':id')
+    @Patch(':influencerId')
     // @UseGuards(RestrictedGuard)
     @ApiOperation({ summary: 'Update influencer by ID' })
     @ApiResponse({ status: HttpStatus.OK, type: UpdateInfluencerDto, description: 'Update influencer by ID', })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData, })
     @UseInterceptors(FileFieldsInterceptor([{ name: 'image', maxCount: 1 }]))
     public async update(
-        @Param('id', ParseIntPipe) id: number,
+        @Param('influencerId', ParseIntPipe) influencerId: number,
         @Body() updateInfluencerDto: UpdateInfluencerDto,
         @UploadedFiles() files: { image?: MemoryStorageFile },
     ): Promise<GetInfluencerDto> {
         try {
-            const updatedInfluencer = await this.influencersService.update(id, updateInfluencerDto);
-            if (!updatedInfluencer) throw new BadRequestException(`Influencer with ID ${id} not found!`);
+            const updatedInfluencer = await this.influencersService.update(influencerId, updateInfluencerDto);
+            if (!updatedInfluencer) throw new BadRequestException(`Influencer with ID ${influencerId} not found!`);
             return updatedInfluencer;
         } catch (error: unknown) {
             if (error instanceof CustomThrowError) {
@@ -101,17 +101,17 @@ export class InfluencersController {
         }
     }
 
-    @Delete(':id')
+    @Delete(':influencerId')
     // @UseGuards(RestrictedGuard)
     @ApiOperation({ summary: 'Delete influencer by ID' })
-    @ApiResponse({ status: HttpStatus.OK, description: 'Delete influencer' })
+    @ApiResponse({ status: HttpStatus.OK, description: 'Delete influencer by ID' })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData, })
     public async delete(
-        @Param('id', ParseIntPipe) id: number
+        @Param('influencerId', ParseIntPipe) influencerId: number
     ): Promise<void> {
         try {
-            const success = await this.influencersService.delete(id);
-            if (!success) throw new BadRequestException(`Influencer with ID ${id} not found`);
+            const success = await this.influencersService.delete(influencerId);
+            if (!success) throw new BadRequestException(`Influencer with ID ${influencerId} not found`);
             return;
         } catch (error: unknown) {
             if (error instanceof CustomThrowError) {
@@ -125,7 +125,7 @@ export class InfluencersController {
     @Post('/accounts/:influencerId')
     // @UseGuards(RestrictedGuard)
     @ApiConsumes('multipart/form-data')
-    @ApiOperation({ summary: 'Create new account (for influencer)' })
+    @ApiOperation({ summary: 'Create new account' })
     @ApiResponse({ status: HttpStatus.CREATED, type: CreateAccountDto, description: "Create new account" })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
     @UseInterceptors(FileFieldsInterceptor([{ name: 'image', maxCount: 1 }]))
@@ -161,6 +161,27 @@ export class InfluencersController {
             const updatedAccount = await this.influencersService.updateAccount(accountId, updateAccountDto);
             if (!updatedAccount) throw new BadRequestException(`Account with ID ${accountId} not found!`);
             return updatedAccount;
+        } catch (error: unknown) {
+            if (error instanceof CustomThrowError) {
+                const { message, meta } = error;
+                throw new BadRequestException({ message, meta });
+            }
+            throw new BadRequestException(error);
+        }
+    }
+
+    @Delete('/accounts/:accountId')
+    // @UseGuards(RestrictedGuard)
+    @ApiOperation({ summary: 'Delete account by ID' })
+    @ApiResponse({ status: HttpStatus.OK, description: 'Delete account by ID' })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData, })
+    public async deleteAccount(
+        @Param('accountId', ParseIntPipe) accountId: number
+    ): Promise<void> {
+        try {
+            const success = await this.influencersService.deleteAccount(accountId);
+            if (!success) throw new BadRequestException(`Account with ID ${accountId} not found`);
+            return;
         } catch (error: unknown) {
             if (error instanceof CustomThrowError) {
                 const { message, meta } = error;
