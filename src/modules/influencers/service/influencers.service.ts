@@ -3,7 +3,7 @@ import { PrismaService } from '../../common';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { CustomThrowError } from '../../common/controller/config';
 import { CreateAccountDto, CreateInfluencerDto, GetAccountDto, GetInfluencerDto, UpdateInfluencerDto } from '../model/influencers.dto';
-import { Accounts, Platform } from '@prisma/client';
+import { Accounts, Influencer, Platform } from '@prisma/client';
 import { InfluencersData } from '../model';
 
 @Injectable()
@@ -104,15 +104,15 @@ export class InfluencersService {
     /**
      * Create a new influencer (with account) record
      *
-     * @param data Influencer (and account) details
+     * @param createInfluencerDto Influencer (and account) details
      * @returns New influencer (and account) data created in the database
      */
-    public async create(data: CreateInfluencerDto): Promise<GetInfluencerDto> {
+    public async create(createInfluencerDto: CreateInfluencerDto): Promise<GetInfluencerDto> {
         try {
             const influencerAccountIds: number[] = [];          // Stores all newly created accounts' ids
             const influencerAccounts: GetAccountDto[] = [];     // Stores all newly created accounts
 
-            const { accounts, ...others } = data;
+            const { accounts, ...others } = createInfluencerDto;
             const accountsData = JSON.parse(accounts);
             for (let i = 0; i < accountsData.length; i++) {
                 const newAccountData = accountsData[i] as CreateAccountDto;
@@ -167,11 +167,11 @@ export class InfluencersService {
         updateClientDto: UpdateInfluencerDto,
     ): Promise<GetInfluencerDto | null> {
         try {
-            const existingInfluencer = await this.prismaService.influencer.findUnique({ where: { influencer_id: influencerId } });
+            const existingInfluencer = await this.prismaService.influencer.findUnique({ where: { influencer_id: influencerId } }) as Influencer;
             const accountsData: GetAccountDto[] = [];
 
             if (!existingInfluencer) return null;
-            const updatedInfluencer = await this.prismaService.influencer.update({ where: { influencer_id: influencerId }, data: updateClientDto });
+            const updatedInfluencer = await this.prismaService.influencer.update({ where: { influencer_id: influencerId }, data: updateClientDto }) as Influencer;
 
             for (let accountId of updatedInfluencer.accounts_id) {
                 const account = await this.prismaService.accounts.findUnique({ where: { account_id: accountId } }) as Accounts;
@@ -216,5 +216,44 @@ export class InfluencersService {
         if (!existingInfluencer) return false;
         await this.prismaService.influencer.delete({ where: { influencer_id: influencerId } });
         return true;
+    }
+
+    /**
+     * Create a new account (for influencer) record
+     *
+     * @param createAccountDto Account details
+     * @returns New account data created in the database
+     */
+    public async createAccount(influencerId: number, createAccountDto: CreateAccountDto): Promise<GetAccountDto | null> {
+        try {
+            const existingInfluencer = await this.prismaService.influencer.findUnique({ where: { influencer_id: influencerId } }) as Influencer;
+            if (!existingInfluencer) return null;
+
+            const newAccount = await this.prismaService.accounts.create({ data: createAccountDto }) as Accounts;
+            const newInfluencerAccountIds = [...existingInfluencer.accounts_id, newAccount.account_id];
+            await this.prismaService.influencer.update({ where: { influencer_id: influencerId }, data: { accounts_id: newInfluencerAccountIds } }) as Influencer;
+
+            const platform = await this.prismaService.platform.findUnique({ where: { platform_id: newAccount.platform_id } }) as Platform;
+            return {
+                ...newAccount,
+                platform_name: platform.platform_name,
+                platform_type: platform.platform_type
+            } as GetAccountDto;
+        } catch (error) {
+            if (error instanceof PrismaClientKnownRequestError) {
+                // known prisma client error
+                throw new CustomThrowError(
+                    error.code,
+                    error.message,
+                    error.meta
+                );
+            }
+            // unknown error
+            throw new CustomThrowError(
+                "-1",
+                error.message,
+                error.meta
+            );
+        }
     }
 }

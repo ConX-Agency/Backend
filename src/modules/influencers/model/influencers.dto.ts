@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import { IsOptional, IsString, IsEmail, IsArray, IsNumber } from 'class-validator';
 
 export class GetInfluencerDto {
@@ -165,6 +166,10 @@ export class UpdateInfluencerDto {
 }
 
 export class GetAccountDto {
+    @ApiProperty({ description: 'Account ID', example: '1' })
+    @IsNumber()
+    account_id: number;
+
     @ApiProperty({ description: 'Platform Name', example: 'Instagram' })
     @IsString()
     platform_name: string;
@@ -196,6 +201,7 @@ export class GetAccountDto {
 
 export class CreateAccountDto {
     @ApiProperty({ description: 'Platform ID' })
+    @Transform(({ value }) => parseInt(value))
     @IsNumber()
     platform_id: number;
 

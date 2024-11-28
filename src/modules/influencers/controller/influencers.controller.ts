@@ -2,11 +2,11 @@ import { BadRequestException, Body, Controller, Delete, Get, HttpStatus, Param, 
 import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LoggerService } from '../../common';
 import { InfluencersService } from '../service';
-import { InfluencersPipe } from '../flow';
+import { AccountsPipe, InfluencersPipe } from '../flow';
 import { CustomThrowError } from '../../common/controller/config';
 import { ErrorData } from '../../common/model/config';
 import { FileFieldsInterceptor, MemoryStorageFile } from '@blazity/nest-file-fastify';
-import { CreateInfluencerDto, GetInfluencerDto, UpdateInfluencerDto } from '../model/influencers.dto';
+import { CreateAccountDto, CreateInfluencerDto, GetAccountDto, GetInfluencerDto, UpdateInfluencerDto } from '../model/influencers.dto';
 
 @Controller('influencers')
 @ApiTags('Influencers')
@@ -110,6 +110,32 @@ export class InfluencersController {
             if (!success) throw new BadRequestException(`Influencer with ID ${id} not found`);
             return;
         } catch (error) {
+            throw new BadRequestException(error);
+        }
+    }
+
+    @Post('/accounts/:id')
+    // @UseGuards(RestrictedGuard)
+    @ApiConsumes('multipart/form-data')
+    @ApiOperation({ summary: 'Create new account (for influencer)' })
+    @ApiResponse({ status: HttpStatus.CREATED, type: CreateAccountDto })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
+    @UseInterceptors(FileFieldsInterceptor([{ name: 'image', maxCount: 1 }]))
+    public async createAccount(
+        @Param('id', ParseIntPipe) id: number,
+        @Body(AccountsPipe) createAccountsDto: CreateAccountDto,
+        @UploadedFiles() files: { image?: MemoryStorageFile },
+    ): Promise<GetAccountDto> {
+        try {
+            const newAccount = await this.influencersService.createAccount(id, createAccountsDto);
+            if (!newAccount) throw new BadRequestException(`Influencer does not exist!`);
+            this.logger.info(`Registered new account with ID ${newAccount?.account_id}!`);
+            return newAccount;
+        } catch (error: unknown) {
+            if (error instanceof CustomThrowError) {
+                const { message, meta } = error;
+                throw new BadRequestException({ message, meta });
+            }
             throw new BadRequestException(error);
         }
     }

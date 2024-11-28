@@ -26,7 +26,7 @@ export class InfluencersPipe extends JoiValidationPipe {
 export class AccountsPipe extends JoiValidationPipe {
     public buildSchema(): Joi.Schema {
         return Joi.object<CreateAccountDto>({
-            platform_id: Joi.number().required().max(AccountsData.MAX_LENGTH),
+            platform_id: Joi.number().required(),
             social_media_url: Joi.string().required().max(AccountsData.MAX_LENGTH),
             media_country: Joi.string().required().max(AccountsData.MAX_LENGTH),
             followers: Joi.string().required().max(AccountsData.MAX_LENGTH),
