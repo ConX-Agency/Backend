@@ -229,6 +229,7 @@ export class CreateAccountDto {
 export class UpdateAccountDto {
     @ApiProperty({ description: 'Platform ID', required: false })
     @IsOptional()
+    @Transform(({ value }) => parseInt(value))
     @IsNumber()
     platform_id: number;
 

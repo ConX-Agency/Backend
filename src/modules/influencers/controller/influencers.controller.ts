@@ -6,7 +6,7 @@ import { AccountsPipe, InfluencersPipe } from '../flow';
 import { CustomThrowError } from '../../common/controller/config';
 import { ErrorData } from '../../common/model/config';
 import { FileFieldsInterceptor, MemoryStorageFile } from '@blazity/nest-file-fastify';
-import { CreateAccountDto, CreateInfluencerDto, GetAccountDto, GetInfluencerDto, UpdateInfluencerDto } from '../model/influencers.dto';
+import { CreateAccountDto, CreateInfluencerDto, GetAccountDto, GetInfluencerDto, UpdateAccountDto, UpdateInfluencerDto } from '../model/influencers.dto';
 
 @Controller('influencers')
 @ApiTags('Influencers')
@@ -19,7 +19,7 @@ export class InfluencersController {
 
     @Get()
     @ApiOperation({ summary: 'Get all influencers' })
-    @ApiResponse({ status: HttpStatus.OK, isArray: true, type: Array<GetInfluencerDto> })
+    @ApiResponse({ status: HttpStatus.OK, isArray: true, type: Array<GetInfluencerDto>, description: "Get all influencers" })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
     public async getAll(): Promise<GetInfluencerDto[]> {
         try {
@@ -34,8 +34,8 @@ export class InfluencersController {
     }
 
     @Get(':id')
-    @ApiOperation({ summary: 'Get influencer by id' })
-    @ApiResponse({ status: HttpStatus.OK, isArray: true, type: GetInfluencerDto })
+    @ApiOperation({ summary: 'Get influencer by ID' })
+    @ApiResponse({ status: HttpStatus.OK, isArray: true, type: GetInfluencerDto, description: "Get influencer by ID" })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
     public async getById(
         @Param('id', ParseIntPipe) id: number,
@@ -57,7 +57,7 @@ export class InfluencersController {
     // @UseGuards(RestrictedGuard)
     @ApiConsumes('multipart/form-data')
     @ApiOperation({ summary: 'Register new influencer' })
-    @ApiResponse({ status: HttpStatus.CREATED, type: CreateInfluencerDto })
+    @ApiResponse({ status: HttpStatus.CREATED, type: CreateInfluencerDto, description: "Register influencer" })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
     @UseInterceptors(FileFieldsInterceptor([{ name: 'image', maxCount: 1 }]))
     public async register(
@@ -79,8 +79,8 @@ export class InfluencersController {
 
     @Patch(':id')
     // @UseGuards(RestrictedGuard)
-    @ApiOperation({ summary: 'Update client by ID' })
-    @ApiResponse({ status: HttpStatus.OK, type: UpdateInfluencerDto, description: 'Update influencer', })
+    @ApiOperation({ summary: 'Update influencer by ID' })
+    @ApiResponse({ status: HttpStatus.OK, type: UpdateInfluencerDto, description: 'Update influencer by ID', })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData, })
     @UseInterceptors(FileFieldsInterceptor([{ name: 'image', maxCount: 1 }]))
     public async update(
@@ -92,7 +92,11 @@ export class InfluencersController {
             const updatedInfluencer = await this.influencersService.update(id, updateInfluencerDto);
             if (!updatedInfluencer) throw new BadRequestException(`Influencer with ID ${id} not found!`);
             return updatedInfluencer;
-        } catch (error) {
+        } catch (error: unknown) {
+            if (error instanceof CustomThrowError) {
+                const { message, meta } = error;
+                throw new BadRequestException({ message, meta });
+            }
             throw new BadRequestException(error);
         }
     }
@@ -109,28 +113,54 @@ export class InfluencersController {
             const success = await this.influencersService.delete(id);
             if (!success) throw new BadRequestException(`Influencer with ID ${id} not found`);
             return;
-        } catch (error) {
+        } catch (error: unknown) {
+            if (error instanceof CustomThrowError) {
+                const { message, meta } = error;
+                throw new BadRequestException({ message, meta });
+            }
             throw new BadRequestException(error);
         }
     }
 
-    @Post('/accounts/:id')
+    @Post('/accounts/:influencerId')
     // @UseGuards(RestrictedGuard)
     @ApiConsumes('multipart/form-data')
     @ApiOperation({ summary: 'Create new account (for influencer)' })
-    @ApiResponse({ status: HttpStatus.CREATED, type: CreateAccountDto })
+    @ApiResponse({ status: HttpStatus.CREATED, type: CreateAccountDto, description: "Create new account" })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
     @UseInterceptors(FileFieldsInterceptor([{ name: 'image', maxCount: 1 }]))
     public async createAccount(
-        @Param('id', ParseIntPipe) id: number,
+        @Param('influencerId', ParseIntPipe) influencerId: number,
         @Body(AccountsPipe) createAccountsDto: CreateAccountDto,
-        @UploadedFiles() files: { image?: MemoryStorageFile },
     ): Promise<GetAccountDto> {
         try {
-            const newAccount = await this.influencersService.createAccount(id, createAccountsDto);
+            const newAccount = await this.influencersService.createAccount(influencerId, createAccountsDto);
             if (!newAccount) throw new BadRequestException(`Influencer does not exist!`);
             this.logger.info(`Registered new account with ID ${newAccount?.account_id}!`);
             return newAccount;
+        } catch (error: unknown) {
+            if (error instanceof CustomThrowError) {
+                const { message, meta } = error;
+                throw new BadRequestException({ message, meta });
+            }
+            throw new BadRequestException(error);
+        }
+    }
+
+    @Patch('/accounts/:accountId')
+    // @UseGuards(RestrictedGuard)
+    @ApiOperation({ summary: 'Update account by ID' })
+    @ApiResponse({ status: HttpStatus.OK, type: UpdateAccountDto, description: 'Update account by ID', })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData, })
+    @UseInterceptors(FileFieldsInterceptor([{ name: 'image', maxCount: 1 }]))
+    public async updateAccount(
+        @Param('accountId', ParseIntPipe) accountId: number,
+        @Body() updateAccountDto: UpdateAccountDto
+    ): Promise<GetAccountDto> {
+        try {
+            const updatedAccount = await this.influencersService.updateAccount(accountId, updateAccountDto);
+            if (!updatedAccount) throw new BadRequestException(`Account with ID ${accountId} not found!`);
+            return updatedAccount;
         } catch (error: unknown) {
             if (error instanceof CustomThrowError) {
                 const { message, meta } = error;

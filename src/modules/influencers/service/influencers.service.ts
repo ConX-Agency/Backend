@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { CustomThrowError } from '../../common/controller/config';
-import { CreateAccountDto, CreateInfluencerDto, GetAccountDto, GetInfluencerDto, UpdateInfluencerDto } from '../model/influencers.dto';
+import { CreateAccountDto, CreateInfluencerDto, GetAccountDto, GetInfluencerDto, UpdateAccountDto, UpdateInfluencerDto } from '../model/influencers.dto';
 import { Accounts, Influencer, Platform } from '@prisma/client';
 import { InfluencersData } from '../model';
 
@@ -164,14 +164,14 @@ export class InfluencersService {
      */
     public async update(
         influencerId: number,
-        updateClientDto: UpdateInfluencerDto,
+        updateInfluencerDto: UpdateInfluencerDto,
     ): Promise<GetInfluencerDto | null> {
         try {
             const existingInfluencer = await this.prismaService.influencer.findUnique({ where: { influencer_id: influencerId } }) as Influencer;
             const accountsData: GetAccountDto[] = [];
 
             if (!existingInfluencer) return null;
-            const updatedInfluencer = await this.prismaService.influencer.update({ where: { influencer_id: influencerId }, data: updateClientDto }) as Influencer;
+            const updatedInfluencer = await this.prismaService.influencer.update({ where: { influencer_id: influencerId }, data: updateInfluencerDto }) as Influencer;
 
             for (let accountId of updatedInfluencer.accounts_id) {
                 const account = await this.prismaService.accounts.findUnique({ where: { account_id: accountId } }) as Accounts;
@@ -232,6 +232,46 @@ export class InfluencersService {
             const newAccount = await this.prismaService.accounts.create({ data: createAccountDto }) as Accounts;
             const newInfluencerAccountIds = [...existingInfluencer.accounts_id, newAccount.account_id];
             await this.prismaService.influencer.update({ where: { influencer_id: influencerId }, data: { accounts_id: newInfluencerAccountIds } }) as Influencer;
+
+            const platform = await this.prismaService.platform.findUnique({ where: { platform_id: newAccount.platform_id } }) as Platform;
+            return {
+                ...newAccount,
+                platform_name: platform.platform_name,
+                platform_type: platform.platform_type
+            } as GetAccountDto;
+        } catch (error) {
+            if (error instanceof PrismaClientKnownRequestError) {
+                // known prisma client error
+                throw new CustomThrowError(
+                    error.code,
+                    error.message,
+                    error.meta
+                );
+            }
+            // unknown error
+            throw new CustomThrowError(
+                "-1",
+                error.message,
+                error.meta
+            );
+        }
+    }
+
+    /**
+     * Update account (for influencer) record
+     *
+     * @param accountId Account id
+     * @param updateAccountDto New account details
+     * @returns New influencer data updated in the database
+     */
+    public async updateAccount(
+        accountId: number,
+        updateAccountDto: UpdateAccountDto,
+    ): Promise<GetAccountDto | null> {
+        try {
+            const existingAccount = await this.prismaService.accounts.findUnique({ where: { account_id: accountId } }) as Accounts;
+            if (!existingAccount) return null;
+            const newAccount = await this.prismaService.accounts.update({ where: { account_id: accountId }, data: updateAccountDto }) as Accounts;
 
             const platform = await this.prismaService.platform.findUnique({ where: { platform_id: newAccount.platform_id } }) as Platform;
             return {

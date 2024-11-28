@@ -92,7 +92,11 @@ export class ClientsController {
             const updatedClient = await this.clientsService.update(id, updateClientDto);
             if (!updatedClient) throw new BadRequestException(`Client with ID ${id} not found!`);
             return updatedClient;
-        } catch (error) {
+        } catch (error: unknown) {
+            if (error instanceof CustomThrowError) {
+                const { message, meta } = error;
+                throw new BadRequestException({ message, meta });
+            }
             throw new BadRequestException(error);
         }
     }
@@ -109,7 +113,11 @@ export class ClientsController {
             const success = await this.clientsService.delete(id);
             if (!success) throw new BadRequestException(`Client with ID ${id} not found`);
             return;
-        } catch (error) {
+        } catch (error: unknown) {
+            if (error instanceof CustomThrowError) {
+                const { message, meta } = error;
+                throw new BadRequestException({ message, meta });
+            }
             throw new BadRequestException(error);
         }
     }
