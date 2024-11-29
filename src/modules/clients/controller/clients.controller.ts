@@ -33,16 +33,16 @@ export class ClientsController {
         }
     }
 
-    @Get(':id')
+    @Get(':clientId')
     @ApiOperation({ summary: 'Get client by id' })
     @ApiResponse({ status: HttpStatus.OK, isArray: true, type: GetClientDto })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
     public async getById(
-        @Param('id', ParseIntPipe) id: number,
+        @Param('clientId', ParseIntPipe) clientId: number,
     ): Promise<GetClientDto | null> {
         try {
-            const client = await this.clientsService.getById(id);
-            if (!client) throw new BadRequestException(`Client with ID ${id} not found!`);
+            const client = await this.clientsService.getById(clientId);
+            if (!client) throw new BadRequestException(`Client with ID ${clientId} not found!`);
             return client;
         } catch (error: unknown) {
             if (error instanceof CustomThrowError) {
@@ -77,20 +77,20 @@ export class ClientsController {
         }
     }
 
-    @Patch(':id')
+    @Patch(':clientId')
     // @UseGuards(RestrictedGuard)
     @ApiOperation({ summary: 'Update client by ID' })
     @ApiResponse({ status: HttpStatus.OK, type: UpdateClientDto, description: 'Update client', })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData, })
     @UseInterceptors(FileFieldsInterceptor([{ name: 'image', maxCount: 1 }]))
     public async update(
-        @Param('id', ParseIntPipe) id: number,
+        @Param('clientId', ParseIntPipe) clientId: number,
         @Body() updateClientDto: UpdateClientDto,
         @UploadedFiles() files: { image?: MemoryStorageFile },
     ): Promise<GetClientDto> {
         try {
-            const updatedClient = await this.clientsService.update(id, updateClientDto);
-            if (!updatedClient) throw new BadRequestException(`Client with ID ${id} not found!`);
+            const updatedClient = await this.clientsService.update(clientId, updateClientDto);
+            if (!updatedClient) throw new BadRequestException(`Client with ID ${clientId} not found!`);
             return updatedClient;
         } catch (error: unknown) {
             if (error instanceof CustomThrowError) {
@@ -101,17 +101,17 @@ export class ClientsController {
         }
     }
 
-    @Delete(':id')
+    @Delete(':clientId')
     // @UseGuards(RestrictedGuard)
     @ApiOperation({ summary: 'Delete client by ID' })
     @ApiResponse({ status: HttpStatus.OK, description: 'Delete client' })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData, })
     public async delete(
-        @Param('id', ParseIntPipe) id: number
+        @Param('clientId', ParseIntPipe) clientId: number
     ): Promise<void> {
         try {
-            const success = await this.clientsService.delete(id);
-            if (!success) throw new BadRequestException(`Client with ID ${id} not found`);
+            const success = await this.clientsService.delete(clientId);
+            if (!success) throw new BadRequestException(`Client with ID ${clientId} not found`);
             return;
         } catch (error: unknown) {
             if (error instanceof CustomThrowError) {

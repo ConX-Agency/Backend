@@ -1,9 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common';
-import { ClientsData } from '../model';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { CustomThrowError } from '../../common/controller/config';
-import { CreateClientDto, UpdateClientDto } from '../model/clients.dto';
+import { CreateClientDto, GetClientDto, UpdateClientDto } from '../model/clients.dto';
 
 @Injectable()
 export class ClientsService {
@@ -16,10 +15,10 @@ export class ClientsService {
      *
      * @returns Clients list
      */
-    public async getAll(): Promise<ClientsData[]> {
+    public async getAll(): Promise<GetClientDto[]> {
         try {
-            const clients = await this.prismaService.clients.findMany({});
-            return clients.map(client => new ClientsData(client));
+            const clients = await this.prismaService.clients.findMany({}) as GetClientDto[];
+            return clients;
         } catch (error) {
             if (error instanceof PrismaClientKnownRequestError) {
                 // known prisma client error
@@ -43,9 +42,9 @@ export class ClientsService {
      * 
      * @returns Client data
      */
-    public async getById(clientId: number): Promise<ClientsData | null> {
+    public async getById(clientId: number): Promise<GetClientDto | null> {
         try {
-            const client = await this.prismaService.clients.findUnique({ where: { client_id: clientId } });
+            const client = await this.prismaService.clients.findUnique({ where: { client_id: clientId } }) as GetClientDto;
             return client;
         } catch (error) {
             if (error instanceof PrismaClientKnownRequestError) {
@@ -71,10 +70,10 @@ export class ClientsService {
      * @param data Client details
      * @returns New client data created in the database
      */
-    public async create(data: CreateClientDto): Promise<ClientsData> {
+    public async create(data: CreateClientDto): Promise<GetClientDto> {
         try {
-            const newClient = await this.prismaService.clients.create({ data });
-            return new ClientsData(newClient);
+            const newClient = await this.prismaService.clients.create({ data }) as GetClientDto;
+            return newClient;
         } catch (error) {
             if (error instanceof PrismaClientKnownRequestError) {
                 // known prisma client error
@@ -103,11 +102,11 @@ export class ClientsService {
     public async update(
         clientId: number,
         updateClientDto: UpdateClientDto,
-    ): Promise<ClientsData | null> {
+    ): Promise<GetClientDto | null> {
         try {
-            const existingClient = await this.prismaService.clients.findUnique({ where: { client_id: clientId } });
+            const existingClient = await this.prismaService.clients.findUnique({ where: { client_id: clientId } }) as GetClientDto;
             if (!existingClient) return null;
-            const updatedClient = await this.prismaService.clients.update({ where: { client_id: clientId }, data: updateClientDto });
+            const updatedClient = await this.prismaService.clients.update({ where: { client_id: clientId }, data: updateClientDto }) as GetClientDto;
             return updatedClient;
         } catch (error) {
             if (error instanceof PrismaClientKnownRequestError) {

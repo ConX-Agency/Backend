@@ -1,8 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsOptional, IsString, IsEmail, IsBoolean } from 'class-validator';
+import { IsOptional, IsString, IsEmail, IsBoolean, IsNumber } from 'class-validator';
 
 export class GetClientDto {
+    @ApiProperty({ description: 'Client ID', example: '1' })
+    @IsNumber()
+    client_id: number;
+
     @ApiProperty({ description: 'Client Company Name', example: 'TraverseX Sdn Bhd' })
     @IsString()
     company_name: string;
