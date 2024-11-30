@@ -6,7 +6,7 @@ import { UsersPipe } from '../flow';
 import { CustomThrowError } from '../../common/controller/config';
 import { ErrorData } from '../../common/model/config';
 import { FileFieldsInterceptor, MemoryStorageFile } from '@blazity/nest-file-fastify';
-import { CreateUserDto, GetUserDto, UpdateUserDto } from '../model/users.dto';
+import { CreateUserDto, GetUserDto, LoginDto, LoginUserDataDto, UpdateUserDto } from '../model/users.dto';
 
 @Controller('users')
 @ApiTags('Users')
@@ -161,6 +161,78 @@ export class UsersController {
             const success = await this.usersService.delete(userId);
             if (!success) throw new BadRequestException(`User with ID ${userId} not found`);
             return;
+        } catch (error: unknown) {
+            if (error instanceof CustomThrowError) {
+                const { message, meta } = error;
+                throw new BadRequestException({ message, meta });
+            }
+            throw new BadRequestException(error);
+        }
+    }
+
+    @Post('/client/login')
+    // @UseGuards(RestrictedGuard)
+    @ApiConsumes('multipart/form-data')
+    @ApiOperation({ summary: 'Login client user' })
+    @ApiResponse({ status: HttpStatus.CREATED, type: LoginDto, description: 'Login client user' })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
+    @UseInterceptors(FileFieldsInterceptor([{ name: 'image', maxCount: 1 }]))
+    public async loginClient(
+        @Body() loginDto: LoginDto,
+        @UploadedFiles() files: { image?: MemoryStorageFile },
+    ): Promise<LoginUserDataDto> {
+        try {
+            const newUser = await this.usersService.login(loginDto, UsersService.USER_TYPES.CLIENT);
+            this.logger.info(`Login into client user with user ID ${newUser.userData.user_id}!`);
+            return newUser;
+        } catch (error: unknown) {
+            if (error instanceof CustomThrowError) {
+                const { message, meta } = error;
+                throw new BadRequestException({ message, meta });
+            }
+            throw new BadRequestException(error);
+        }
+    }
+
+    @Post('/admin/login')
+    // @UseGuards(RestrictedGuard)
+    @ApiConsumes('multipart/form-data')
+    @ApiOperation({ summary: 'Login admin user' })
+    @ApiResponse({ status: HttpStatus.CREATED, type: LoginDto, description: 'Login admin user' })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
+    @UseInterceptors(FileFieldsInterceptor([{ name: 'image', maxCount: 1 }]))
+    public async loginAdmin(
+        @Body() loginDto: LoginDto,
+        @UploadedFiles() files: { image?: MemoryStorageFile },
+    ): Promise<LoginUserDataDto> {
+        try {
+            const newUser = await this.usersService.login(loginDto, UsersService.USER_TYPES.ADMIN);
+            this.logger.info(`Login into admin user with user ID ${newUser.userData.user_id}!`);
+            return newUser;
+        } catch (error: unknown) {
+            if (error instanceof CustomThrowError) {
+                const { message, meta } = error;
+                throw new BadRequestException({ message, meta });
+            }
+            throw new BadRequestException(error);
+        }
+    }
+
+    @Post('/influencer/login')
+    // @UseGuards(RestrictedGuard)
+    @ApiConsumes('multipart/form-data')
+    @ApiOperation({ summary: 'Login influencer user' })
+    @ApiResponse({ status: HttpStatus.CREATED, type: LoginDto, description: 'Login influencer user' })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
+    @UseInterceptors(FileFieldsInterceptor([{ name: 'image', maxCount: 1 }]))
+    public async loginInfluencer(
+        @Body() loginDto: LoginDto,
+        @UploadedFiles() files: { image?: MemoryStorageFile },
+    ): Promise<LoginUserDataDto> {
+        try {
+            const newUser = await this.usersService.login(loginDto, UsersService.USER_TYPES.INFLUENCER);
+            this.logger.info(`Login into influencer user with user ID ${newUser.userData.user_id}!`);
+            return newUser;
         } catch (error: unknown) {
             if (error instanceof CustomThrowError) {
                 const { message, meta } = error;

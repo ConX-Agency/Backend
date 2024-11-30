@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, IsEmail, IsNumber, IsStrongPassword } from 'class-validator';
+import { IsOptional, IsString, IsEmail, IsNumber, IsStrongPassword, IsNotEmpty, IsObject } from 'class-validator';
 
 export class GetUserDto {
     @ApiProperty({ description: 'User ID', example: '1' })
@@ -87,4 +87,22 @@ export class UpdateUserDto {
     @IsOptional()
     @IsStrongPassword()
     password?: string;
+}
+
+export class LoginDto {
+    @IsString()
+    @IsNotEmpty()
+    username: string;
+
+    @IsString()
+    @IsNotEmpty()
+    password: string;
+}
+
+export class LoginUserDataDto {
+    @IsString()
+    token: string;
+
+    @IsObject()
+    userData: GetUserDto;
 }

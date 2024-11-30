@@ -2,7 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { PasswordService, PrismaService } from '../../common';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { CustomThrowError } from '../../common/controller/config';
-import { CreateUserDto, GetUserDto, UpdateUserDto } from '../model/users.dto';
+import { CreateUserDto, GetUserDto, LoginDto, LoginUserDataDto, UpdateUserDto } from '../model/users.dto';
+import { Users } from '@prisma/client';
+import * as jwt from 'jsonwebtoken';
 
 enum USER_TYPES {
     ADMIN = "Admin",
@@ -176,6 +178,7 @@ export class UsersService {
      *
      * @param userId User id
      * @param updateUserDto New user details
+     * @param userType New user type
      * @returns New user data updated in the database
      */
     public async adminUpdate(
@@ -247,5 +250,62 @@ export class UsersService {
         if (!existingUser) return false;
         await this.prismaService.users.delete({ where: { user_id: userId } });
         return true;
+    }
+
+    /**
+     * Handle user's login
+     * 
+     * @param loginDto User login details
+     * @param userType User type
+     * @returns User details (in signed JWT)
+     */
+    public async login(loginDto: LoginDto, userType: USER_TYPES | null = null): Promise<LoginUserDataDto> {
+        try {
+            const user = await this.prismaService.users.findFirst({ where: { username: loginDto.username } }) as Users;
+            if (!user || user.type !== userType) throw new CustomThrowError(
+                "0",
+                "User not found with the username!",
+            );
+            const isValidatePassword = await this.passwordService.validatePassword(loginDto.password, user.password);
+            if (isValidatePassword) {
+                const userData = {
+                    user_id: user.user_id,
+                    full_name: user.full_name,
+                    preferred_name: user.preferred_name,
+                    contact_number: user.contact_number,
+                    email_address: user.email_address,
+                    username: user.username,
+                    type: user.type
+                } as GetUserDto;
+                const token = jwt.sign({ userData }, `${process.env.JWT_SECRET}`, {
+                    algorithm: 'HS256',
+                    issuer: `${process.env.JWT_ISSUER}`
+                });
+                return {
+                    token,
+                    userData
+                };
+            } else {
+                throw new CustomThrowError(
+                    "0",
+                    "Invalid password for the user!",
+                );
+            }
+        } catch (error) {
+            if (error instanceof PrismaClientKnownRequestError) {
+                // known prisma client error
+                throw new CustomThrowError(
+                    error.code,
+                    error.message,
+                    error.meta
+                );
+            }
+            // unknown error
+            throw new CustomThrowError(
+                "-1",
+                error.message,
+                error.meta
+            );
+        }
     }
 }
