@@ -9,6 +9,7 @@ export class UsersInput extends PickType(
         'contact_number',
         'email_address',
         'username',
-        'password'
+        'password',
+        'type'
     ] as const
 ) { }

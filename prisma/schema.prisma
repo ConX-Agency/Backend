@@ -19,6 +19,7 @@ model Users {
   email_address             String    @unique
   username                  String    @unique
   password                  String
+  type                      String
 }
 
 model Clients {

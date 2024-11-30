@@ -9,6 +9,7 @@ export class UsersData {
     public readonly email_address: string;
     public readonly username: string;
     public readonly password: string;
+    public readonly type: string;
 
     public constructor(entity: Users) {
         this.user_id = entity.user_id;
@@ -18,5 +19,6 @@ export class UsersData {
         this.email_address = entity.email_address;
         this.username = entity.username;
         this.password = entity.password;
+        this.type = entity.type;
     }
 }

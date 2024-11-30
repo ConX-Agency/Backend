@@ -4,17 +4,25 @@ import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { CustomThrowError } from '../../common/controller/config';
 import { CreateUserDto, GetUserDto, UpdateUserDto } from '../model/users.dto';
 
+enum USER_TYPES {
+    ADMIN = "Admin",
+    CLIENT = "Client",
+    INFLUENCER = "Influencer",
+}
+
 @Injectable()
 export class UsersService {
-    private dbSelectionsWithoutPassword: object = {
+    private static DB_GET_SELECTIONS: object = {
         user_id: true,
         full_name: true,
         preferred_name: true,
         contact_number: true,
         email_address: true,
+        type: true,
         username: true,
         password: false
     }
+    public static USER_TYPES = USER_TYPES;
 
     public constructor(
         private readonly prismaService: PrismaService,
@@ -29,7 +37,7 @@ export class UsersService {
     public async getAll(): Promise<GetUserDto[]> {
         try {
             const users = await this.prismaService.users.findMany({
-                select: this.dbSelectionsWithoutPassword
+                select: UsersService.DB_GET_SELECTIONS
             }) as GetUserDto[];
             return users;
         } catch (error) {
@@ -59,7 +67,7 @@ export class UsersService {
         try {
             const user = await this.prismaService.users.findUnique({
                 where: { user_id: userId },
-                select: this.dbSelectionsWithoutPassword
+                select: UsersService.DB_GET_SELECTIONS
             }) as GetUserDto;
             return user;
         } catch (error) {
@@ -86,13 +94,13 @@ export class UsersService {
      * @param createUserDto User details
      * @returns New user data created in the database
      */
-    public async create(createUserDto: CreateUserDto): Promise<GetUserDto> {
+    public async create(createUserDto: CreateUserDto, userType: USER_TYPES): Promise<GetUserDto> {
         try {
             const { password, ...others } = createUserDto;
             const hashedPassword = await this.passwordService.hashPassword(password);
             const newUser = await this.prismaService.users.create({
-                data: { ...others, password: hashedPassword },
-                select: this.dbSelectionsWithoutPassword
+                data: { ...others, password: hashedPassword, type: userType },
+                select: UsersService.DB_GET_SELECTIONS
             }) as GetUserDto;
             return newUser;
         } catch (error) {
@@ -135,15 +143,80 @@ export class UsersService {
                 updatedUser = await this.prismaService.users.update({
                     where: { user_id: userId },
                     data: { ...others, password: hashedPassword },
-                    select: this.dbSelectionsWithoutPassword
+                    select: UsersService.DB_GET_SELECTIONS
                 }) as GetUserDto;
             }
             else
                 updatedUser = await this.prismaService.users.update({
                     where: { user_id: userId },
                     data: updateUserDto,
-                    select: this.dbSelectionsWithoutPassword
+                    select: UsersService.DB_GET_SELECTIONS
                 }) as GetUserDto;
+            return updatedUser;
+        } catch (error) {
+            if (error instanceof PrismaClientKnownRequestError) {
+                // known prisma client error
+                throw new CustomThrowError(
+                    error.code,
+                    error.message,
+                    error.meta
+                );
+            }
+            // unknown error
+            throw new CustomThrowError(
+                "-1",
+                error.message,
+                error.meta
+            );
+        }
+    }
+
+    /**
+     * Update user record (only for admin)
+     *
+     * @param userId User id
+     * @param updateUserDto New user details
+     * @returns New user data updated in the database
+     */
+    public async adminUpdate(
+        userId: number,
+        updateUserDto: UpdateUserDto,
+        userType: USER_TYPES | null = null,
+    ): Promise<GetUserDto | null> {
+        try {
+            const existingUser = await this.prismaService.users.findUnique({ where: { user_id: userId } }) as GetUserDto;
+            if (!existingUser) return null;
+
+            const { password, ...others } = updateUserDto;
+            let updatedUser: GetUserDto;
+            if (password) {
+                const hashedPassword = await this.passwordService.hashPassword(password);
+                if (userType)
+                    updatedUser = await this.prismaService.users.update({
+                        where: { user_id: userId },
+                        data: { ...others, password: hashedPassword, type: userType },
+                        select: UsersService.DB_GET_SELECTIONS
+                    }) as GetUserDto;
+                else
+                    updatedUser = await this.prismaService.users.update({
+                        where: { user_id: userId },
+                        data: { ...others, password: hashedPassword },
+                        select: UsersService.DB_GET_SELECTIONS
+                    }) as GetUserDto;
+            }
+            else
+                if (userType)
+                    updatedUser = await this.prismaService.users.update({
+                        where: { user_id: userId },
+                        data: { ...updateUserDto, type: userType },
+                        select: UsersService.DB_GET_SELECTIONS
+                    }) as GetUserDto;
+                else
+                    updatedUser = await this.prismaService.users.update({
+                        where: { user_id: userId },
+                        data: updateUserDto,
+                        select: UsersService.DB_GET_SELECTIONS
+                    }) as GetUserDto;
             return updatedUser;
         } catch (error) {
             if (error instanceof PrismaClientKnownRequestError) {

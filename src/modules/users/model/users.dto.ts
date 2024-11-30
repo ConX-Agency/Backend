@@ -25,6 +25,10 @@ export class GetUserDto {
     @ApiProperty({ description: 'Username', example: 'jason123' })
     @IsString()
     username: string;
+
+    @ApiProperty({ description: 'User Type', example: 'Admin' })
+    @IsString()
+    type: string;
 }
 
 export class CreateUserDto {

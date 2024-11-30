@@ -53,20 +53,68 @@ export class UsersController {
         }
     }
 
-    @Post()
+    @Post('/client')
     // @UseGuards(RestrictedGuard)
     @ApiConsumes('multipart/form-data')
-    @ApiOperation({ summary: 'Register new user' })
-    @ApiResponse({ status: HttpStatus.CREATED, type: CreateUserDto, description: 'Register new user' })
+    @ApiOperation({ summary: 'Register new client user' })
+    @ApiResponse({ status: HttpStatus.CREATED, type: CreateUserDto, description: 'Register new client user' })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
     @UseInterceptors(FileFieldsInterceptor([{ name: 'image', maxCount: 1 }]))
-    public async register(
+    public async registerClient(
         @Body(UsersPipe) registerUserDto: CreateUserDto,
         @UploadedFiles() files: { image?: MemoryStorageFile },
     ): Promise<GetUserDto> {
         try {
-            const newUser = await this.usersService.create(registerUserDto);
-            this.logger.info(`Registered new user with ID ${newUser.user_id}!`);
+            const newUser = await this.usersService.create(registerUserDto, UsersService.USER_TYPES.CLIENT);
+            this.logger.info(`Registered new client user with ID ${newUser.user_id}!`);
+            return newUser;
+        } catch (error: unknown) {
+            if (error instanceof CustomThrowError) {
+                const { message, meta } = error;
+                throw new BadRequestException({ message, meta });
+            }
+            throw new BadRequestException(error);
+        }
+    }
+
+    @Post('/admin')
+    // @UseGuards(RestrictedGuard)
+    @ApiConsumes('multipart/form-data')
+    @ApiOperation({ summary: 'Register new admin user' })
+    @ApiResponse({ status: HttpStatus.CREATED, type: CreateUserDto, description: 'Register new admin user' })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
+    @UseInterceptors(FileFieldsInterceptor([{ name: 'image', maxCount: 1 }]))
+    public async registerAdmin(
+        @Body(UsersPipe) registerUserDto: CreateUserDto,
+        @UploadedFiles() files: { image?: MemoryStorageFile },
+    ): Promise<GetUserDto> {
+        try {
+            const newUser = await this.usersService.create(registerUserDto, UsersService.USER_TYPES.ADMIN);
+            this.logger.info(`Registered new admin user with ID ${newUser.user_id}!`);
+            return newUser;
+        } catch (error: unknown) {
+            if (error instanceof CustomThrowError) {
+                const { message, meta } = error;
+                throw new BadRequestException({ message, meta });
+            }
+            throw new BadRequestException(error);
+        }
+    }
+
+    @Post('/influencer')
+    // @UseGuards(RestrictedGuard)
+    @ApiConsumes('multipart/form-data')
+    @ApiOperation({ summary: 'Register new influencer user' })
+    @ApiResponse({ status: HttpStatus.CREATED, type: CreateUserDto, description: 'Register new influencer user' })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
+    @UseInterceptors(FileFieldsInterceptor([{ name: 'image', maxCount: 1 }]))
+    public async registerInfluencer(
+        @Body(UsersPipe) registerUserDto: CreateUserDto,
+        @UploadedFiles() files: { image?: MemoryStorageFile },
+    ): Promise<GetUserDto> {
+        try {
+            const newUser = await this.usersService.create(registerUserDto, UsersService.USER_TYPES.INFLUENCER);
+            this.logger.info(`Registered new influencer user with ID ${newUser.user_id}!`);
             return newUser;
         } catch (error: unknown) {
             if (error instanceof CustomThrowError) {
