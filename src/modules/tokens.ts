@@ -9,6 +9,8 @@ export enum Service {
     CONFIG = 'config.service',
 }
 
-export enum Role {
-    RESTRICTED = 'restricted'
+export enum UserRole {
+    ADMIN = "Admin",
+    CLIENT = "Client",
+    INFLUENCER = "Influencer"
 }

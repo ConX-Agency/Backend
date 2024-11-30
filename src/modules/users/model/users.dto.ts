@@ -90,19 +90,23 @@ export class UpdateUserDto {
 }
 
 export class LoginDto {
+    @ApiProperty({ description: 'Username', example: 'jason123' })
     @IsString()
     @IsNotEmpty()
     username: string;
 
+    @ApiProperty({ description: 'Password', example: 'xxxxxxxxxxxxxx' })
     @IsString()
     @IsNotEmpty()
     password: string;
 }
 
 export class LoginUserDataDto {
+    @ApiProperty({ description: 'Access Token' })
     @IsString()
     token: string;
 
+    @ApiProperty({ description: 'Logged In User Data' })
     @IsObject()
     userData: GetUserDto;
 }

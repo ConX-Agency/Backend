@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, Get, HttpStatus, Param, ParseIntPipe, Patch, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, HttpStatus, Param, ParseIntPipe, Patch, Post, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LoggerService } from '../../common';
 import { UsersService } from '../service';
@@ -7,6 +7,7 @@ import { CustomThrowError } from '../../common/controller/config';
 import { ErrorData } from '../../common/model/config';
 import { FileFieldsInterceptor, MemoryStorageFile } from '@blazity/nest-file-fastify';
 import { CreateUserDto, GetUserDto, LoginDto, LoginUserDataDto, UpdateUserDto } from '../model/users.dto';
+import { AdminGuard, UserGuard } from '../../common/security/user.guard';
 
 @Controller('users')
 @ApiTags('Users')
@@ -18,6 +19,7 @@ export class UsersController {
     ) { }
 
     @Get()
+    @UseGuards(UserGuard)
     @ApiOperation({ summary: 'Get all users' })
     @ApiResponse({ status: HttpStatus.OK, isArray: true, type: Array<GetUserDto>, description: "Get All Users" })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
@@ -34,6 +36,7 @@ export class UsersController {
     }
 
     @Get(':userId')
+    @UseGuards(UserGuard)
     @ApiOperation({ summary: 'Get user by id' })
     @ApiResponse({ status: HttpStatus.OK, isArray: true, type: GetUserDto, description: "Get User By ID" })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
@@ -54,7 +57,6 @@ export class UsersController {
     }
 
     @Post('/client')
-    // @UseGuards(RestrictedGuard)
     @ApiConsumes('multipart/form-data')
     @ApiOperation({ summary: 'Register new client user' })
     @ApiResponse({ status: HttpStatus.CREATED, type: CreateUserDto, description: 'Register new client user' })
@@ -78,7 +80,7 @@ export class UsersController {
     }
 
     @Post('/admin')
-    // @UseGuards(RestrictedGuard)
+    @UseGuards(AdminGuard)
     @ApiConsumes('multipart/form-data')
     @ApiOperation({ summary: 'Register new admin user' })
     @ApiResponse({ status: HttpStatus.CREATED, type: CreateUserDto, description: 'Register new admin user' })
@@ -102,7 +104,6 @@ export class UsersController {
     }
 
     @Post('/influencer')
-    // @UseGuards(RestrictedGuard)
     @ApiConsumes('multipart/form-data')
     @ApiOperation({ summary: 'Register new influencer user' })
     @ApiResponse({ status: HttpStatus.CREATED, type: CreateUserDto, description: 'Register new influencer user' })
@@ -126,7 +127,7 @@ export class UsersController {
     }
 
     @Patch(':userId')
-    // @UseGuards(RestrictedGuard)
+    @UseGuards(UserGuard)
     @ApiOperation({ summary: 'Update user by ID' })
     @ApiResponse({ status: HttpStatus.OK, type: UpdateUserDto, description: 'Update user by ID', })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData, })
@@ -150,7 +151,7 @@ export class UsersController {
     }
 
     @Delete(':userId')
-    // @UseGuards(RestrictedGuard)
+    @UseGuards(UserGuard)
     @ApiOperation({ summary: 'Delete user by ID' })
     @ApiResponse({ status: HttpStatus.OK, type: Boolean, description: 'Delete user by ID' })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData, })
@@ -171,7 +172,6 @@ export class UsersController {
     }
 
     @Post('/client/login')
-    // @UseGuards(RestrictedGuard)
     @ApiConsumes('multipart/form-data')
     @ApiOperation({ summary: 'Login client user' })
     @ApiResponse({ status: HttpStatus.CREATED, type: LoginDto, description: 'Login client user' })
@@ -195,7 +195,6 @@ export class UsersController {
     }
 
     @Post('/admin/login')
-    // @UseGuards(RestrictedGuard)
     @ApiConsumes('multipart/form-data')
     @ApiOperation({ summary: 'Login admin user' })
     @ApiResponse({ status: HttpStatus.CREATED, type: LoginDto, description: 'Login admin user' })
@@ -219,7 +218,6 @@ export class UsersController {
     }
 
     @Post('/influencer/login')
-    // @UseGuards(RestrictedGuard)
     @ApiConsumes('multipart/form-data')
     @ApiOperation({ summary: 'Login influencer user' })
     @ApiResponse({ status: HttpStatus.CREATED, type: LoginDto, description: 'Login influencer user' })

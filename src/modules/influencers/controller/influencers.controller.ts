@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, Get, HttpStatus, Param, ParseIntPipe, Patch, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, HttpStatus, Param, ParseIntPipe, Patch, Post, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LoggerService } from '../../common';
 import { InfluencersService } from '../service';
@@ -7,6 +7,7 @@ import { CustomThrowError } from '../../common/controller/config';
 import { ErrorData } from '../../common/model/config';
 import { FileFieldsInterceptor, MemoryStorageFile } from '@blazity/nest-file-fastify';
 import { CreateAccountDto, CreateInfluencerDto, GetAccountDto, GetInfluencerDto, UpdateAccountDto, UpdateInfluencerDto } from '../model/influencers.dto';
+import { AdminGuard, AdminInfluencerGuard, UserGuard } from '../../common/security/user.guard';
 
 @Controller('influencers')
 @ApiTags('Influencers')
@@ -18,6 +19,7 @@ export class InfluencersController {
     ) { }
 
     @Get()
+    @UseGuards(UserGuard)
     @ApiOperation({ summary: 'Get all influencers' })
     @ApiResponse({ status: HttpStatus.OK, isArray: true, type: Array<GetInfluencerDto>, description: "Get all influencers" })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
@@ -34,6 +36,7 @@ export class InfluencersController {
     }
 
     @Get(':influencerId')
+    @UseGuards(UserGuard)
     @ApiOperation({ summary: 'Get influencer by ID' })
     @ApiResponse({ status: HttpStatus.OK, isArray: true, type: GetInfluencerDto, description: "Get influencer by ID" })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
@@ -54,7 +57,7 @@ export class InfluencersController {
     }
 
     @Post()
-    // @UseGuards(RestrictedGuard)
+    @UseGuards(AdminGuard)
     @ApiConsumes('multipart/form-data')
     @ApiOperation({ summary: 'Register new influencer' })
     @ApiResponse({ status: HttpStatus.CREATED, type: CreateInfluencerDto, description: "Register influencer" })
@@ -78,7 +81,7 @@ export class InfluencersController {
     }
 
     @Patch(':influencerId')
-    // @UseGuards(RestrictedGuard)
+    @UseGuards(AdminInfluencerGuard)
     @ApiOperation({ summary: 'Update influencer by ID' })
     @ApiResponse({ status: HttpStatus.OK, type: UpdateInfluencerDto, description: 'Update influencer by ID', })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData, })
@@ -102,7 +105,7 @@ export class InfluencersController {
     }
 
     @Delete(':influencerId')
-    // @UseGuards(RestrictedGuard)
+    @UseGuards(AdminInfluencerGuard)
     @ApiOperation({ summary: 'Delete influencer by ID' })
     @ApiResponse({ status: HttpStatus.OK, description: 'Delete influencer by ID' })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData, })
@@ -123,7 +126,7 @@ export class InfluencersController {
     }
 
     @Post('/accounts/:influencerId')
-    // @UseGuards(RestrictedGuard)
+    @UseGuards(AdminInfluencerGuard)
     @ApiConsumes('multipart/form-data')
     @ApiOperation({ summary: 'Create new account' })
     @ApiResponse({ status: HttpStatus.CREATED, type: CreateAccountDto, description: "Create new account" })
@@ -148,7 +151,7 @@ export class InfluencersController {
     }
 
     @Patch('/accounts/:accountId')
-    // @UseGuards(RestrictedGuard)
+    @UseGuards(AdminInfluencerGuard)
     @ApiOperation({ summary: 'Update account by ID' })
     @ApiResponse({ status: HttpStatus.OK, type: UpdateAccountDto, description: 'Update account by ID', })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData, })
@@ -171,7 +174,7 @@ export class InfluencersController {
     }
 
     @Delete('/accounts/:accountId')
-    // @UseGuards(RestrictedGuard)
+    @UseGuards(AdminInfluencerGuard)
     @ApiOperation({ summary: 'Delete account by ID' })
     @ApiResponse({ status: HttpStatus.OK, description: 'Delete account by ID' })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData, })

@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, Get, HttpStatus, Param, ParseIntPipe, Patch, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, HttpStatus, Param, ParseIntPipe, Patch, Post, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LoggerService } from '../../common';
 import { ClientsService } from '../service';
@@ -7,6 +7,7 @@ import { CustomThrowError } from '../../common/controller/config';
 import { ErrorData } from '../../common/model/config';
 import { FileFieldsInterceptor, MemoryStorageFile } from '@blazity/nest-file-fastify';
 import { CreateClientDto, GetClientDto, UpdateClientDto } from '../model/clients.dto';
+import { AdminClientGuard, UserGuard } from '../../common/security/user.guard';
 
 @Controller('clients')
 @ApiTags('Clients')
@@ -18,6 +19,7 @@ export class ClientsController {
     ) { }
 
     @Get()
+    @UseGuards(UserGuard)
     @ApiOperation({ summary: 'Get all clients' })
     @ApiResponse({ status: HttpStatus.OK, isArray: true, type: Array<GetClientDto> })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
@@ -34,6 +36,7 @@ export class ClientsController {
     }
 
     @Get(':clientId')
+    @UseGuards(UserGuard)
     @ApiOperation({ summary: 'Get client by id' })
     @ApiResponse({ status: HttpStatus.OK, isArray: true, type: GetClientDto })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
@@ -54,7 +57,7 @@ export class ClientsController {
     }
 
     @Post()
-    // @UseGuards(RestrictedGuard)
+    @UseGuards(AdminClientGuard)
     @ApiConsumes('multipart/form-data')
     @ApiOperation({ summary: 'Register new client' })
     @ApiResponse({ status: HttpStatus.CREATED, type: CreateClientDto })
@@ -78,7 +81,7 @@ export class ClientsController {
     }
 
     @Patch(':clientId')
-    // @UseGuards(RestrictedGuard)
+    @UseGuards(AdminClientGuard)
     @ApiOperation({ summary: 'Update client by ID' })
     @ApiResponse({ status: HttpStatus.OK, type: UpdateClientDto, description: 'Update client', })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData, })
@@ -102,7 +105,7 @@ export class ClientsController {
     }
 
     @Delete(':clientId')
-    // @UseGuards(RestrictedGuard)
+    @UseGuards(AdminClientGuard)
     @ApiOperation({ summary: 'Delete client by ID' })
     @ApiResponse({ status: HttpStatus.OK, description: 'Delete client' })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData, })
