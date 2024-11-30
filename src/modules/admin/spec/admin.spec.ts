@@ -8,13 +8,13 @@ import * as request from 'supertest';
 import '@types/jest';
 
 /**
- * Influencers API end-to-end tests
+ * Clients API end-to-end tests
  *
- * this test suite performs end-to-end tests on the influencers API endpoints,
+ * this test suite performs end-to-end tests on the client API endpoints,
  * allowing us to test the behavior of the API and making sure that it fits
  * the requirements.
  */
-describe('Influencers API', () => {
+describe('Clients API', () => {
     let app: INestApplication;
     beforeAll(async () => {
         const module = await Test.createTestingModule({
