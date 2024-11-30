@@ -1,29 +1,29 @@
 import { BadRequestException, Body, Controller, Delete, Get, HttpStatus, Param, ParseIntPipe, Patch, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LoggerService } from '../../common';
-import { AdminService } from '../service';
-import { AdminPipe } from '../flow';
+import { UsersService } from '../service';
+import { UsersPipe } from '../flow';
 import { CustomThrowError } from '../../common/controller/config';
 import { ErrorData } from '../../common/model/config';
 import { FileFieldsInterceptor, MemoryStorageFile } from '@blazity/nest-file-fastify';
-import { CreateAdminDto, GetAdminDto, UpdateAdminDto } from '../model/admin.dto';
+import { CreateUserDto, GetUserDto, UpdateUserDto } from '../model/users.dto';
 
-@Controller('admin')
-@ApiTags('Admin')
+@Controller('users')
+@ApiTags('Users')
 @ApiBearerAuth()
-export class AdminController {
+export class UsersController {
     public constructor(
         private readonly logger: LoggerService,
-        private readonly adminService: AdminService
+        private readonly usersService: UsersService
     ) { }
 
     @Get()
-    @ApiOperation({ summary: 'Get all admins' })
-    @ApiResponse({ status: HttpStatus.OK, isArray: true, type: Array<GetAdminDto>, description: "Get All Admins" })
+    @ApiOperation({ summary: 'Get all users' })
+    @ApiResponse({ status: HttpStatus.OK, isArray: true, type: Array<GetUserDto>, description: "Get All Users" })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
-    public async getAll(): Promise<GetAdminDto[]> {
+    public async getAll(): Promise<GetUserDto[]> {
         try {
-            return await this.adminService.getAll();
+            return await this.usersService.getAll();
         } catch (error: unknown) {
             if (error instanceof CustomThrowError) {
                 const { message, meta } = error;
@@ -33,17 +33,17 @@ export class AdminController {
         }
     }
 
-    @Get(':adminId')
-    @ApiOperation({ summary: 'Get admin by id' })
-    @ApiResponse({ status: HttpStatus.OK, isArray: true, type: GetAdminDto, description: "Get Admin By ID" })
+    @Get(':userId')
+    @ApiOperation({ summary: 'Get user by id' })
+    @ApiResponse({ status: HttpStatus.OK, isArray: true, type: GetUserDto, description: "Get User By ID" })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
     public async getById(
-        @Param('adminId', ParseIntPipe) adminId: number,
-    ): Promise<GetAdminDto | null> {
+        @Param('userId', ParseIntPipe) userId: number,
+    ): Promise<GetUserDto | null> {
         try {
-            const admin = await this.adminService.getById(adminId);
-            if (!admin) throw new BadRequestException(`Admin with ID ${adminId} not found!`);
-            return admin;
+            const user = await this.usersService.getById(userId);
+            if (!user) throw new BadRequestException(`User with ID ${userId} not found!`);
+            return user;
         } catch (error: unknown) {
             if (error instanceof CustomThrowError) {
                 const { message, meta } = error;
@@ -56,18 +56,18 @@ export class AdminController {
     @Post()
     // @UseGuards(RestrictedGuard)
     @ApiConsumes('multipart/form-data')
-    @ApiOperation({ summary: 'Register new admin' })
-    @ApiResponse({ status: HttpStatus.CREATED, type: CreateAdminDto, description: 'Register new admin' })
+    @ApiOperation({ summary: 'Register new user' })
+    @ApiResponse({ status: HttpStatus.CREATED, type: CreateUserDto, description: 'Register new user' })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
     @UseInterceptors(FileFieldsInterceptor([{ name: 'image', maxCount: 1 }]))
     public async register(
-        @Body(AdminPipe) registerAdminDto: CreateAdminDto,
+        @Body(UsersPipe) registerUserDto: CreateUserDto,
         @UploadedFiles() files: { image?: MemoryStorageFile },
-    ): Promise<GetAdminDto> {
+    ): Promise<GetUserDto> {
         try {
-            const newAdmin = await this.adminService.create(registerAdminDto);
-            this.logger.info(`Registered new admin with ID ${newAdmin.admin_id}!`);
-            return newAdmin;
+            const newUser = await this.usersService.create(registerUserDto);
+            this.logger.info(`Registered new user with ID ${newUser.user_id}!`);
+            return newUser;
         } catch (error: unknown) {
             if (error instanceof CustomThrowError) {
                 const { message, meta } = error;
@@ -77,21 +77,21 @@ export class AdminController {
         }
     }
 
-    @Patch(':adminId')
+    @Patch(':userId')
     // @UseGuards(RestrictedGuard)
-    @ApiOperation({ summary: 'Update admin by ID' })
-    @ApiResponse({ status: HttpStatus.OK, type: UpdateAdminDto, description: 'Update admin by ID', })
+    @ApiOperation({ summary: 'Update user by ID' })
+    @ApiResponse({ status: HttpStatus.OK, type: UpdateUserDto, description: 'Update user by ID', })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData, })
     @UseInterceptors(FileFieldsInterceptor([{ name: 'image', maxCount: 1 }]))
     public async update(
-        @Param('adminId', ParseIntPipe) adminId: number,
-        @Body() updateAdminDto: UpdateAdminDto,
+        @Param('userId', ParseIntPipe) userId: number,
+        @Body() updateUserDto: UpdateUserDto,
         @UploadedFiles() files: { image?: MemoryStorageFile },
-    ): Promise<GetAdminDto> {
+    ): Promise<GetUserDto> {
         try {
-            const updatedAdmin = await this.adminService.update(adminId, updateAdminDto);
-            if (!updatedAdmin) throw new BadRequestException(`Admin with ID ${adminId} not found!`);
-            return updatedAdmin;
+            const updatedUser = await this.usersService.update(userId, updateUserDto);
+            if (!updatedUser) throw new BadRequestException(`User with ID ${userId} not found!`);
+            return updatedUser;
         } catch (error: unknown) {
             if (error instanceof CustomThrowError) {
                 const { message, meta } = error;
@@ -101,17 +101,17 @@ export class AdminController {
         }
     }
 
-    @Delete(':adminId')
+    @Delete(':userId')
     // @UseGuards(RestrictedGuard)
-    @ApiOperation({ summary: 'Delete admin by ID' })
-    @ApiResponse({ status: HttpStatus.OK, type: Boolean, description: 'Delete admin by ID' })
+    @ApiOperation({ summary: 'Delete user by ID' })
+    @ApiResponse({ status: HttpStatus.OK, type: Boolean, description: 'Delete user by ID' })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData, })
     public async delete(
-        @Param('adminId', ParseIntPipe) adminId: number
+        @Param('userId', ParseIntPipe) userId: number
     ): Promise<void> {
         try {
-            const success = await this.adminService.delete(adminId);
-            if (!success) throw new BadRequestException(`Admin with ID ${adminId} not found`);
+            const success = await this.usersService.delete(userId);
+            if (!success) throw new BadRequestException(`User with ID ${userId} not found`);
             return;
         } catch (error: unknown) {
             if (error instanceof CustomThrowError) {

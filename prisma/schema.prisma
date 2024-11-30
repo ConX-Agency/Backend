@@ -11,12 +11,14 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-model Admin {
-  admin_id                  Int       @id @default(autoincrement())
+model Users {
+  user_id                   Int       @id @default(autoincrement())
   full_name                 String
   preferred_name            String
   contact_number            String
   email_address             String    @unique
+  username                  String    @unique
+  password                  String
 }
 
 model Clients {

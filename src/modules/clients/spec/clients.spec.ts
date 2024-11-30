@@ -10,7 +10,7 @@ import '@types/jest';
 /**
  * Client API end-to-end tests
  *
- * this test suite performs end-to-end tests on the passenger API endpoints,
+ * this test suite performs end-to-end tests on the client API endpoints,
  * allowing us to test the behavior of the API and making sure that it fits
  * the requirements.
  */

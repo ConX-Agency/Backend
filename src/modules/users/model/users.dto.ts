@@ -1,10 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, IsEmail, IsNumber } from 'class-validator';
+import { IsOptional, IsString, IsEmail, IsNumber, IsStrongPassword } from 'class-validator';
 
-export class GetAdminDto {
-    @ApiProperty({ description: 'Admin ID', example: '1' })
+export class GetUserDto {
+    @ApiProperty({ description: 'User ID', example: '1' })
     @IsNumber()
-    admin_id: number;
+    user_id: number;
 
     @ApiProperty({ description: 'Full Name', example: 'Jason Chong' })
     @IsString()
@@ -21,9 +21,13 @@ export class GetAdminDto {
     @ApiProperty({ description: 'Email Address', example: 'jason@mail.com' })
     @IsEmail()
     email_address: string;
+
+    @ApiProperty({ description: 'Username', example: 'jason123' })
+    @IsString()
+    username: string;
 }
 
-export class CreateAdminDto {
+export class CreateUserDto {
     @ApiProperty({ description: 'Full Name', example: 'Jason Chong' })
     @IsString()
     full_name: string;
@@ -39,9 +43,17 @@ export class CreateAdminDto {
     @ApiProperty({ description: 'Email Address', example: 'jason@mail.com' })
     @IsEmail()
     email_address: string;
+
+    @ApiProperty({ description: 'Username', example: 'jason123' })
+    @IsString()
+    username: string;
+
+    @ApiProperty({ description: 'Password', example: 'xxxxxxxxxxxxxx' })
+    @IsStrongPassword()
+    password: string;
 }
 
-export class UpdateAdminDto {
+export class UpdateUserDto {
     @ApiProperty({ description: 'Full Name', example: 'Jason Chong' })
     @IsOptional()
     @IsString()
@@ -61,4 +73,14 @@ export class UpdateAdminDto {
     @IsOptional()
     @IsEmail()
     email_address?: string;
+
+    @ApiProperty({ description: 'Username', example: 'jason123' })
+    @IsOptional()
+    @IsString()
+    username?: string;
+
+    @ApiProperty({ description: 'Password', example: 'xxxxxxxxxxxxxx' })
+    @IsOptional()
+    @IsStrongPassword()
+    password?: string;
 }
