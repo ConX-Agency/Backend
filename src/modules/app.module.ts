@@ -10,7 +10,7 @@ import { UsersModule } from './users/users.module';
         CommonModule,
         ClientsModule,
         InfluencersModule,
-        UsersModule
+        UsersModule,
     ]
 })
 export class ApplicationModule { }

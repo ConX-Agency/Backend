@@ -61,7 +61,7 @@ async function bootstrap(): Promise<void> {
     const logInterceptor = app.select(CommonModule).get(LogInterceptor);
     app.useGlobalInterceptors(logInterceptor);
     app.useGlobalPipes(new ValidationPipe({ transform: true }));
-    await app.register(multipart as any);
+    await app.register(multipart);
     await app.listen(process.env.API_PORT || API_DEFAULT_PORT);
 }
 

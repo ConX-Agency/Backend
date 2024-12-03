@@ -1,11 +1,11 @@
-import { BadRequestException, Body, Controller, Delete, Get, HttpStatus, Param, ParseIntPipe, Patch, Post, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, HttpStatus, Param, ParseIntPipe, Patch, Post, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LoggerService } from '../../common';
 import { ClientsService } from '../service';
 import { ClientsPipe } from '../flow';
 import { CustomThrowError } from '../../common/controller/config';
 import { ErrorData } from '../../common/model/config';
-import { FileFieldsInterceptor, MemoryStorageFile } from '@blazity/nest-file-fastify';
+import { FileFieldsInterceptor, MemoryStorageFile, UploadedFiles } from '@blazity/nest-file-fastify';
 import { CreateClientDto, GetClientDto, UpdateClientDto } from '../model/clients.dto';
 import { AdminClientGuard, UserGuard } from '../../common/security/user.guard';
 
@@ -71,6 +71,28 @@ export class ClientsController {
             const newClient = await this.clientsService.create(registerClientDto);
             this.logger.info(`Registered new client with ID ${newClient.client_id}!`);
             return newClient;
+        } catch (error: unknown) {
+            if (error instanceof CustomThrowError) {
+                const { message, meta } = error;
+                throw new BadRequestException({ message, meta });
+            }
+            throw new BadRequestException(error);
+        }
+    }
+
+    @Post('/import')
+    // @UseGuards(AdminClientGuard)
+    @ApiConsumes('multipart/form-data')
+    @ApiOperation({ summary: 'Import new clients into database from Excel files' })
+    @ApiResponse({ status: HttpStatus.CREATED, type: Boolean })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
+    @UseInterceptors(FileFieldsInterceptor([{ name: 'file', maxCount: 1 }]))
+    public async import(
+        @UploadedFiles() files: { file?: MemoryStorageFile[] },
+    ): Promise<void> {
+        try {
+            await this.clientsService.bulkCreate(files.file ? files.file[0] : null);
+            return;
         } catch (error: unknown) {
             if (error instanceof CustomThrowError) {
                 const { message, meta } = error;

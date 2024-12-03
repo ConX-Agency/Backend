@@ -3,6 +3,8 @@ import { PrismaService } from '../../common';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { CustomThrowError } from '../../common/controller/config';
 import { CreateClientDto, GetClientDto, UpdateClientDto } from '../model/clients.dto';
+import * as XLSX from 'xlsx';
+import { MemoryStorageFile } from '@blazity/nest-file-fastify';
 
 @Injectable()
 export class ClientsService {
@@ -137,5 +139,44 @@ export class ClientsService {
         if (!existingClient) return false;
         await this.prismaService.clients.delete({ where: { client_id: clientId } });
         return true;
+    }
+
+    /**
+     * Bulk create client records from excel
+     * 
+     * @param file Excel file that contains client data
+     * @returns Status of operation
+     */
+    public async bulkCreate(file: MemoryStorageFile | null): Promise<boolean> {
+        try {
+            if (!file) return false;
+
+            // Parse the file buffer into a workbook
+            const workbook = XLSX.read(file.buffer, { type: 'buffer' });
+            const sheetName = "Client Data";
+            const sheets = workbook.Sheets;
+            const sheet = sheets[sheetName];
+
+            // Convert sheet data to JSON
+            const jsonData = XLSX.utils.sheet_to_json(sheet);
+            console.log(jsonData);
+            return true;
+            // Example: Save data to the database
+        } catch (error) {
+            if (error instanceof PrismaClientKnownRequestError) {
+                // known prisma client error
+                throw new CustomThrowError(
+                    error.code,
+                    error.message,
+                    error.meta
+                );
+            }
+            // unknown error
+            throw new CustomThrowError(
+                "-1",
+                error.message,
+                error.meta
+            );
+        }
     }
 }
