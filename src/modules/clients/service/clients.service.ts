@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../common';
+import { ExcelProvider, PrismaService } from '../../common';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { CustomThrowError } from '../../common/controller/config';
 import { CreateClientDto, GetClientDto, UpdateClientDto } from '../model/clients.dto';
 import * as XLSX from 'xlsx';
 import { MemoryStorageFile } from '@blazity/nest-file-fastify';
+import { ClientExcel } from '../../common/model/excel';
 
 @Injectable()
 export class ClientsService {
@@ -147,21 +148,43 @@ export class ClientsService {
      * @param file Excel file that contains client data
      * @returns Status of operation
      */
-    public async bulkCreate(file: MemoryStorageFile | null): Promise<boolean> {
+    public async bulkCreate(file: MemoryStorageFile | null): Promise<GetClientDto[]> {
         try {
-            if (!file) return false;
+            if (!file) {
+                throw new CustomThrowError(
+                    "0",
+                    "File is not found!"
+                );
+            }
 
-            // Parse the file buffer into a workbook
             const workbook = XLSX.read(file.buffer, { type: 'buffer' });
-            const sheetName = "Client Data";
-            const sheets = workbook.Sheets;
-            const sheet = sheets[sheetName];
+            const sheet = workbook.Sheets[ExcelProvider.CLIENT_SHEET_NAME];
+            const sheetData: ClientExcel[] = XLSX.utils.sheet_to_json(sheet);
 
-            // Convert sheet data to JSON
-            const jsonData = XLSX.utils.sheet_to_json(sheet);
-            console.log(jsonData);
-            return true;
-            // Example: Save data to the database
+            const allNewClients: GetClientDto[] = [];
+            for (let data of sheetData) {
+                const clientData: CreateClientDto = {
+                    company_name: data[ExcelProvider.CLIENT_COMPANY_NAME],
+                    person_in_charge_name: data[ExcelProvider.CLIENT_PIC_NAME],
+                    company_email: data[ExcelProvider.CLIENT_COMPANY_EMAIL] ?? null,
+                    pic_email: data[ExcelProvider.CLIENT_PIC_EMAIL],
+                    contact_number: data[ExcelProvider.CLIENT_CONTACT].toString(),
+                    additional_contact_number: data[ExcelProvider.CLIENT_ADDITIONAL_CONTACT] ?? null,
+                    industry: data[ExcelProvider.CLIENT_INDUSTRY] ?? null,
+                    category: data[ExcelProvider.CLIENT_CATEGORY] ?? null,
+                    package: data[ExcelProvider.CLIENT_PACKAGE],
+                    address: data[ExcelProvider.CLIENT_ADDRESS],
+                    city: data[ExcelProvider.CLIENT_CITY] ?? null,
+                    country: data[ExcelProvider.CLIENT_COUNTRY],
+                    is_halal: data[ExcelProvider.CLIENT_IS_HALAL].toLowerCase() === "yes",
+                    postcode: data[ExcelProvider.CLIENT_POSTCODE],
+                    state: data[ExcelProvider.CLIENT_STATE],
+                }
+                const newClient = await this.prismaService.clients.create({ data: clientData }) as GetClientDto;
+                allNewClients.push(newClient);
+            }
+
+            return allNewClients;
         } catch (error) {
             if (error instanceof PrismaClientKnownRequestError) {
                 // known prisma client error

@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, Get, HttpStatus, Param, ParseIntPipe, Patch, Post, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, HttpStatus, Param, ParseIntPipe, Patch, Post, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LoggerService } from '../../common';
 import { InfluencersService } from '../service';
@@ -8,6 +8,7 @@ import { ErrorData } from '../../common/model/config';
 import { FileFieldsInterceptor, MemoryStorageFile } from '@blazity/nest-file-fastify';
 import { CreateAccountDto, CreateInfluencerDto, GetAccountDto, GetInfluencerDto, UpdateAccountDto, UpdateInfluencerDto } from '../model/influencers.dto';
 import { AdminGuard, AdminInfluencerGuard, UserGuard } from '../../common/security/user.guard';
+import { UploadedFiles } from '@blazity/nest-file-fastify';
 
 @Controller('influencers')
 @ApiTags('Influencers')
@@ -82,6 +83,7 @@ export class InfluencersController {
 
     @Patch(':influencerId')
     @UseGuards(AdminInfluencerGuard)
+    @ApiConsumes('multipart/form-data')
     @ApiOperation({ summary: 'Update influencer by ID' })
     @ApiResponse({ status: HttpStatus.OK, type: UpdateInfluencerDto, description: 'Update influencer by ID', })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData, })
@@ -152,6 +154,7 @@ export class InfluencersController {
 
     @Patch('/accounts/:accountId')
     @UseGuards(AdminInfluencerGuard)
+    @ApiConsumes('multipart/form-data')
     @ApiOperation({ summary: 'Update account by ID' })
     @ApiResponse({ status: HttpStatus.OK, type: UpdateAccountDto, description: 'Update account by ID', })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData, })

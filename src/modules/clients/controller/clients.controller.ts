@@ -1,5 +1,5 @@
 import { BadRequestException, Body, Controller, Delete, Get, HttpStatus, Param, ParseIntPipe, Patch, Post, UseGuards, UseInterceptors } from '@nestjs/common';
-import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LoggerService } from '../../common';
 import { ClientsService } from '../service';
 import { ClientsPipe } from '../flow';
@@ -81,18 +81,31 @@ export class ClientsController {
     }
 
     @Post('/import')
-    // @UseGuards(AdminClientGuard)
+    @UseGuards(AdminClientGuard)
     @ApiConsumes('multipart/form-data')
     @ApiOperation({ summary: 'Import new clients into database from Excel files' })
-    @ApiResponse({ status: HttpStatus.CREATED, type: Boolean })
+    @ApiBody({
+        description: 'Excel file to upload',
+        required: true,
+        schema: {
+            type: 'object',
+            properties: {
+                file: {
+                    type: 'string',
+                    format: 'binary',
+                },
+            },
+        },
+    })
+    @ApiResponse({ status: HttpStatus.CREATED, type: Array<GetClientDto> })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
     @UseInterceptors(FileFieldsInterceptor([{ name: 'file', maxCount: 1 }]))
     public async import(
         @UploadedFiles() files: { file?: MemoryStorageFile[] },
-    ): Promise<void> {
+    ): Promise<GetClientDto[]> {
         try {
-            await this.clientsService.bulkCreate(files.file ? files.file[0] : null);
-            return;
+            const newClients = await this.clientsService.bulkCreate(files.file ? files.file[0] : null);
+            return newClients;
         } catch (error: unknown) {
             if (error instanceof CustomThrowError) {
                 const { message, meta } = error;
@@ -104,6 +117,7 @@ export class ClientsController {
 
     @Patch(':clientId')
     @UseGuards(AdminClientGuard)
+    @ApiConsumes('multipart/form-data')
     @ApiOperation({ summary: 'Update client by ID' })
     @ApiResponse({ status: HttpStatus.OK, type: UpdateClientDto, description: 'Update client', })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData, })

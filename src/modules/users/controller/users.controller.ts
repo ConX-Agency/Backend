@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, Get, HttpStatus, Param, ParseIntPipe, Patch, Post, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, HttpStatus, Param, ParseIntPipe, Patch, Post, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LoggerService } from '../../common';
 import { UsersService } from '../service';
@@ -8,6 +8,7 @@ import { ErrorData } from '../../common/model/config';
 import { FileFieldsInterceptor, MemoryStorageFile } from '@blazity/nest-file-fastify';
 import { CreateUserDto, GetUserDto, LoginDto, LoginUserDataDto, UpdateUserDto } from '../model/users.dto';
 import { AdminGuard, UserGuard } from '../../common/security/user.guard';
+import { UploadedFiles } from '@blazity/nest-file-fastify';
 
 @Controller('users')
 @ApiTags('Users')
@@ -128,6 +129,7 @@ export class UsersController {
 
     @Patch(':userId')
     @UseGuards(UserGuard)
+    @ApiConsumes('multipart/form-data')
     @ApiOperation({ summary: 'Update user by ID' })
     @ApiResponse({ status: HttpStatus.OK, type: UpdateUserDto, description: 'Update user by ID', })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData, })
