@@ -319,4 +319,65 @@ export class InfluencersService {
         await this.prismaService.accounts.delete({ where: { account_id: accountId } });
         return true;
     }
+
+    /**
+     * Bulk create influencer records from excel
+     * 
+     * @param file Excel file that contains influencer data
+     * @returns Status of operation
+     */
+    // public async bulkCreate(file: MemoryStorageFile | null): Promise<GetInfluencerDto[]> {
+    //     try {
+    //         if (!file) {
+    //             throw new CustomThrowError(
+    //                 "0",
+    //                 "File is not found!"
+    //             );
+    //         }
+
+    //         const workbook = XLSX.read(file.buffer, { type: 'buffer' });
+    //         const sheet = workbook.Sheets[ExcelProvider.INFLUENCER_SHEET_NAME];
+    //         const sheetData: InfluencerExcel[] = XLSX.utils.sheet_to_json(sheet);
+
+    //         const allNewInfluencers: GetInfluencerDto[] = [];
+    //         for (let data of sheetData) {
+    //             const influencerData: CreateInfluencerDto = {
+    //                 company_name: data[ExcelProvider.CLIENT_COMPANY_NAME],
+    //                 person_in_charge_name: data[ExcelProvider.CLIENT_PIC_NAME],
+    //                 company_email: data[ExcelProvider.CLIENT_COMPANY_EMAIL] ?? null,
+    //                 pic_email: data[ExcelProvider.CLIENT_PIC_EMAIL],
+    //                 contact_number: data[ExcelProvider.CLIENT_CONTACT].toString(),
+    //                 additional_contact_number: data[ExcelProvider.CLIENT_ADDITIONAL_CONTACT] ?? null,
+    //                 industry: data[ExcelProvider.CLIENT_INDUSTRY] ?? null,
+    //                 category: data[ExcelProvider.CLIENT_CATEGORY] ?? null,
+    //                 package: data[ExcelProvider.CLIENT_PACKAGE],
+    //                 address: data[ExcelProvider.CLIENT_ADDRESS],
+    //                 city: data[ExcelProvider.CLIENT_CITY] ?? null,
+    //                 country: data[ExcelProvider.CLIENT_COUNTRY],
+    //                 is_halal: data[ExcelProvider.CLIENT_IS_HALAL].toLowerCase() === "yes",
+    //                 postcode: data[ExcelProvider.CLIENT_POSTCODE],
+    //                 state: data[ExcelProvider.CLIENT_STATE],
+    //             }
+    //             const newInfluencer = await this.prismaService.influencer.create({ data: influencerData }) as GetClientDto;
+    //             allNewInfluencers.push(newInfluencer);
+    //         }
+
+    //         return allNewInfluencers;
+    //     } catch (error) {
+    //         if (error instanceof PrismaClientKnownRequestError) {
+    //             // known prisma client error
+    //             throw new CustomThrowError(
+    //                 error.code,
+    //                 error.message,
+    //                 error.meta
+    //             );
+    //         }
+    //         // unknown error
+    //         throw new CustomThrowError(
+    //             "-1",
+    //             error.message,
+    //             error.meta
+    //         );
+    //     }
+    // }
 }

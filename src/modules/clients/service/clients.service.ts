@@ -3,9 +3,9 @@ import { ExcelProvider, PrismaService } from '../../common';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { CustomThrowError } from '../../common/controller/config';
 import { CreateClientDto, GetClientDto, UpdateClientDto } from '../model/clients.dto';
-import * as XLSX from 'xlsx';
 import { MemoryStorageFile } from '@blazity/nest-file-fastify';
 import { ClientExcel } from '../../common/model/excel';
+import * as XLSX from 'xlsx';
 
 @Injectable()
 export class ClientsService {

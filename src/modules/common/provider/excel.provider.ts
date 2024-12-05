@@ -15,4 +15,33 @@ export class ExcelProvider {
     static CLIENT_IS_HALAL = "Is Halal";
     static CLIENT_POSTCODE = "Postcode";
     static CLIENT_STATE = "State";
+
+    static INFLUENCER_SHEET_NAME = "Influencer Data";
+    static INFLUENCER_FULL_NAME = "Full Name";
+    static INFLUENCER_PREFERRED_NAME = "Preferred Name";
+    static INFLUENCER_CONTACT = "Contact Number";
+    static INFLUENCER_ADDITIONAL_CONTACT = "Additional Contact Number";
+    static INFLUENCER_HOME_ADDRESS = "Home Address";
+    static INFLUENCER_COUNTRY = "Country";
+    static INFLUENCER_CITY = "City";
+    static INFLUENCER_STATE = "State";
+    static INFLUENCER_POSTCODE = "Postcode";
+    static INFLUENCER_DIET_PREFERENCE = "Diet Preference";
+    static INFLUENCER_INSTAGRAM_URL = "Instagram URL";
+    static INFLUENCER_TIKTOK_URL = "TikTok URL";
+    static INFLUENCER_REDBOOK_URL = "RedBook URL";
+    static INFLUENCER_INSTAGRAM_FOLLOWERS = "Instagram Followers";
+    static INFLUENCER_TIKTOK_FOLLOWERS = "TikTok Followers";
+    static INFLUENCER_REDBOOK_FOLLOWERS = "RedBook Followers";
+    static INFLUENCER_INSTAGRAM_ACCOUNT_TYPE = "Instagram Account Type";
+    static INFLUENCER_TIKTOK_ACCOUNT_TYPE = "TikTok Account Type";
+    static INFLUENCER_REDBOOK_ACCOUNT_TYPE = "RedBook Account Type";
+    static INFLUENCER_MULTIPLE_COUNTRIES = "Multiple Countries";
+    static INFLUENCER_ADDITIONAL_COUNTRY = "Additional Country";
+    static INFLUENCER_INDUSTRY = "Additional Country";
+    static INFLUENCER_CONSENT_WHATSAPP_GROUP = "Consent WhatsApp Group?";
+    static INFLUENCER_WHATSAPP_INVITED = "WhatsApp Invited?";
+    static INFLUENCER_COMMUNITY = "Community?";
+    static INFLUENCER_INVITE_COUNT = "Invite Count";
+    static INFLUENCER_ACTIVE_STATUS = "Active Status";
 }
