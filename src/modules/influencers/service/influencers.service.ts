@@ -29,8 +29,7 @@ export class InfluencersService {
                     const platform = await this.prismaService.platform.findUnique({ where: { platform_id: account?.platform_id } }) as Platform;
                     accountsData.push({
                         ...account,
-                        platform_name: platform?.platform_name,
-                        platform_type: platform?.platform_type
+                        platform_name: platform?.platform_name
                     })
                 }
                 influencersData.push({
@@ -74,8 +73,7 @@ export class InfluencersService {
                 const platform = await this.prismaService.platform.findUnique({ where: { platform_id: account?.platform_id } }) as Platform;
                 accountsData.push({
                     ...account,
-                    platform_name: platform?.platform_name,
-                    platform_type: platform?.platform_type
+                    platform_name: platform?.platform_name
                 });
             }
 
@@ -122,8 +120,7 @@ export class InfluencersService {
                 const platform = await this.prismaService.platform.findUnique({ where: { platform_id: newAccount.platform_id } }) as Platform;
                 influencerAccounts.push({
                     ...newAccount,
-                    platform_name: platform?.platform_name,
-                    platform_type: platform?.platform_type
+                    platform_name: platform?.platform_name
                 });
             }
 
@@ -178,8 +175,7 @@ export class InfluencersService {
                 const platform = await this.prismaService.platform.findUnique({ where: { platform_id: account?.platform_id } }) as Platform;
                 accountsData.push({
                     ...account,
-                    platform_name: platform?.platform_name,
-                    platform_type: platform?.platform_type
+                    platform_name: platform?.platform_name
                 });
             }
 
@@ -236,8 +232,7 @@ export class InfluencersService {
             const platform = await this.prismaService.platform.findUnique({ where: { platform_id: newAccount.platform_id } }) as Platform;
             return {
                 ...newAccount,
-                platform_name: platform.platform_name,
-                platform_type: platform.platform_type
+                platform_name: platform.platform_name
             } as GetAccountDto;
         } catch (error) {
             if (error instanceof PrismaClientKnownRequestError) {
@@ -276,8 +271,7 @@ export class InfluencersService {
             const platform = await this.prismaService.platform.findUnique({ where: { platform_id: newAccount.platform_id } }) as Platform;
             return {
                 ...newAccount,
-                platform_name: platform.platform_name,
-                platform_type: platform.platform_type
+                platform_name: platform.platform_name
             } as GetAccountDto;
         } catch (error) {
             if (error instanceof PrismaClientKnownRequestError) {

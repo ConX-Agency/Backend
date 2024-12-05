@@ -9,12 +9,17 @@ export class InfluencersInput extends PickType(
         'contact_number',
         'email_address',
         'additional_contact_number',
-        'home_address',
         'country',
         'city',
         'state',
         'postcode',
-        'diet_preference',
+        'multiple_countries',
+        'additional_country',
+        'industry',
+        'consent_whatsapp_group',
+        'whatsapp_invited',
+        'community',
+        'invite_count',
         'accounts_id'
     ] as const
 ) { }
@@ -24,9 +29,7 @@ export class AccountsInput extends PickType(
     [
         'platform_id',
         'social_media_url',
-        'media_country',
         'followers',
-        'industry',
-        'active_status'
+        'account_type'
     ] as const
 ) { }

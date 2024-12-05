@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsOptional, IsString, IsEmail, IsArray, IsNumber } from 'class-validator';
+import { IsOptional, IsString, IsEmail, IsArray, IsNumber, IsBoolean } from 'class-validator';
 
 export class GetInfluencerDto {
     @ApiProperty({ description: 'Influencer ID', example: '1' })
@@ -28,17 +28,13 @@ export class GetInfluencerDto {
     @IsString()
     additional_contact_number: string;
 
-    @ApiProperty({ description: 'Address', example: '[Home address]' })
-    @IsString()
-    home_address: string | null;
-
     @ApiProperty({ description: 'Country', example: 'Malaysia' })
     @IsString()
     country: string;
 
     @ApiProperty({ description: 'City', example: 'Kuala Lumpur' })
     @IsString()
-    city: string | null;
+    city: string;
 
     @ApiProperty({ description: 'State', example: 'Selangor' })
     @IsString()
@@ -46,11 +42,35 @@ export class GetInfluencerDto {
 
     @ApiProperty({ description: 'Postcode', example: '51000' })
     @IsString()
-    postcode: string | null;
+    postcode: string;
 
-    @ApiProperty({ description: 'Diet Preference', example: 'Vegan' })
+    @ApiProperty({ description: 'Is Multiple Countries', example: true })
+    @IsBoolean()
+    multiple_countries: boolean | null;
+
+    @ApiProperty({ description: 'Additional Country', example: "Australia" })
     @IsString()
-    diet_preference: string | null;
+    additional_country: string | null;
+
+    @ApiProperty({ description: 'Industry', example: "F&B" })
+    @IsString()
+    industry: string;
+
+    @ApiProperty({ description: 'Is Consent WhatsApp Group', example: true })
+    @IsBoolean()
+    consent_whatsapp_group: boolean;
+
+    @ApiProperty({ description: 'Is WhatsApp Invited', example: true })
+    @IsBoolean()
+    whatsapp_invited: boolean;
+
+    @ApiProperty({ description: 'Is Added to Community', example: true })
+    @IsBoolean()
+    community: boolean;
+
+    @ApiProperty({ description: 'Invite Count', example: 0 })
+    @IsNumber()
+    invite_count: number;
 
     @ApiProperty({ description: 'Accounts' })
     @IsArray()
@@ -78,29 +98,56 @@ export class CreateInfluencerDto {
     @IsString()
     additional_contact_number: string;
 
-    @ApiProperty({ description: 'Address', example: '[Home address]', required: false })
-    @IsString()
-    home_address: string | null;
-
     @ApiProperty({ description: 'Country', example: 'Malaysia' })
     @IsString()
     country: string;
 
-    @ApiProperty({ description: 'City', example: 'Kuala Lumpur', required: false })
+    @ApiProperty({ description: 'City', example: 'Kuala Lumpur' })
     @IsString()
-    city: string | null;
+    city: string;
 
     @ApiProperty({ description: 'State', example: 'Selangor' })
     @IsString()
     state: string;
 
-    @ApiProperty({ description: 'Postcode', example: '51000', required: false })
+    @ApiProperty({ description: 'Postcode', example: '51000' })
     @IsString()
-    postcode: string | null;
+    postcode: string;
 
-    @ApiProperty({ description: 'Diet Preference', example: 'Vegan', required: false })
+    @ApiProperty({ description: 'Is Multiple Countries', example: true, required: false })
+    @IsOptional()
+    @Transform(({ value }) => value ? value === "true" : false)
+    @IsBoolean()
+    multiple_countries?: boolean;
+
+    @ApiProperty({ description: 'Additional Country', example: "Australia", required: false })
+    @IsOptional()
     @IsString()
-    diet_preference: string | null;
+    additional_country?: string;
+
+    @ApiProperty({ description: 'Industry', example: "F&B" })
+    @IsString()
+    industry: string;
+
+    @ApiProperty({ description: 'Is Consent WhatsApp Group', example: true })
+    @Transform(({ value }) => value === "true")
+    @IsBoolean()
+    consent_whatsapp_group: boolean;
+
+    @ApiProperty({ description: 'Is WhatsApp Invited', example: true })
+    @Transform(({ value }) => value === "true")
+    @IsBoolean()
+    whatsapp_invited: boolean;
+
+    @ApiProperty({ description: 'Is Added to Community', example: true })
+    @Transform(({ value }) => value === "true")
+    @IsBoolean()
+    community: boolean;
+
+    @ApiProperty({ description: 'Invite Count', example: 0 })
+    @Transform(({ value }) => parseInt(value))
+    @IsNumber()
+    invite_count: number;
 
     @ApiProperty({ description: 'Account Data Array (CreateAccountDto type) (Need to JSON Stringify)' })
     @IsString()
@@ -134,11 +181,6 @@ export class UpdateInfluencerDto {
     @IsString()
     additional_contact_number?: string;
 
-    @ApiProperty({ description: 'Address', example: '[Home address]', required: false })
-    @IsOptional()
-    @IsString()
-    home_address?: string;
-
     @ApiProperty({ description: 'Country', example: 'Malaysia', required: false })
     @IsOptional()
     @IsString()
@@ -159,10 +201,44 @@ export class UpdateInfluencerDto {
     @IsString()
     postcode?: string;
 
-    @ApiProperty({ description: 'Diet Preference', example: 'Vegan', required: false })
+    @ApiProperty({ description: 'Is Multiple Countries', example: true, required: false })
+    @IsOptional()
+    @Transform(({ value }) => value ? value === "true" : false)
+    @IsBoolean()
+    multiple_countries?: boolean;
+
+    @ApiProperty({ description: 'Additional Country', example: "Australia", required: false })
     @IsOptional()
     @IsString()
-    diet_preference?: string;
+    additional_country?: string;
+
+    @ApiProperty({ description: 'Industry', example: "F&B", required: false })
+    @IsOptional()
+    @IsString()
+    industry?: string;
+
+    @ApiProperty({ description: 'Is Consent WhatsApp Group', example: true, required: false })
+    @IsOptional()
+    @Transform(({ value }) => value === "true")
+    @IsBoolean()
+    consent_whatsapp_group?: boolean;
+
+    @ApiProperty({ description: 'Is WhatsApp Invited', example: true, required: false })
+    @IsOptional()
+    @Transform(({ value }) => value === "true")
+    @IsBoolean()
+    whatsapp_invited?: boolean;
+
+    @ApiProperty({ description: 'Is Added to Community', example: true, required: false })
+    @IsOptional()
+    @Transform(({ value }) => value === "true")
+    @IsBoolean()
+    community?: boolean;
+
+    @ApiProperty({ description: 'Invite Count', example: 0, required: false })
+    @Transform(({ value }) => parseInt(value))
+    @IsNumber()
+    invite_count?: number;
 }
 
 export class GetAccountDto {
@@ -174,29 +250,17 @@ export class GetAccountDto {
     @IsString()
     platform_name: string;
 
-    @ApiProperty({ description: 'Platform Type', example: 'Social Media' })
+    @ApiProperty({ description: 'Account Type', example: 'Social Media' })
     @IsString()
-    platform_type: string;
+    account_type: string;
 
     @ApiProperty({ description: 'Social Media URL', example: '[Instagram URL]' })
     @IsString()
     social_media_url: string;
 
-    @ApiProperty({ description: 'Media Country', example: 'Malaysia' })
-    @IsString()
-    media_country: string;
-
     @ApiProperty({ description: 'Followers', example: '16k' })
     @IsString()
     followers: string;
-
-    @ApiProperty({ description: 'Industry', example: 'Food,Lifestyles' })
-    @IsString()
-    industry: string;
-
-    @ApiProperty({ description: 'Active Status', example: 'Active' })
-    @IsString()
-    active_status: string;
 }
 
 export class CreateAccountDto {
@@ -205,25 +269,17 @@ export class CreateAccountDto {
     @IsNumber()
     platform_id: number;
 
+    @ApiProperty({ description: 'Account Type', example: 'Social Media' })
+    @IsString()
+    account_type: string;
+
     @ApiProperty({ description: 'Social Media URL', example: '[Instagram URL]' })
     @IsString()
     social_media_url: string;
 
-    @ApiProperty({ description: 'Media Country', example: 'Malaysia' })
-    @IsString()
-    media_country: string;
-
     @ApiProperty({ description: 'Followers', example: '16k' })
     @IsString()
     followers: string;
-
-    @ApiProperty({ description: 'Industry', example: 'Food,Lifestyles' })
-    @IsString()
-    industry: string;
-
-    @ApiProperty({ description: 'Active Status', example: 'Active' })
-    @IsString()
-    active_status: string;
 }
 
 export class UpdateAccountDto {
@@ -231,30 +287,20 @@ export class UpdateAccountDto {
     @IsOptional()
     @Transform(({ value }) => parseInt(value))
     @IsNumber()
-    platform_id: number;
+    platform_id?: number;
+
+    @ApiProperty({ description: 'Account Type', example: 'Social Media', required: false })
+    @IsOptional()
+    @IsString()
+    account_type?: string;
 
     @ApiProperty({ description: 'Social Media URL', example: '[Instagram URL]', required: false })
     @IsOptional()
     @IsString()
-    social_media_url: string;
-
-    @ApiProperty({ description: 'Media Country', example: 'Malaysia', required: false })
-    @IsOptional()
-    @IsString()
-    media_country: string;
+    social_media_url?: string;
 
     @ApiProperty({ description: 'Followers', example: '16k', required: false })
     @IsOptional()
     @IsString()
-    followers: string;
-
-    @ApiProperty({ description: 'Industry', example: 'Food,Lifestyles', required: false })
-    @IsOptional()
-    @IsString()
-    industry: string;
-
-    @ApiProperty({ description: 'Active Status', example: 'Active', required: false })
-    @IsOptional()
-    @IsString()
-    active_status: string;
+    followers?: string;
 }

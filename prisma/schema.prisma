@@ -12,14 +12,14 @@ datasource db {
 }
 
 model Users {
-  user_id                   Int       @id @default(autoincrement())
-  full_name                 String
-  preferred_name            String
-  contact_number            String
-  email_address             String    @unique
-  username                  String    @unique
-  password                  String
-  type                      String
+  user_id        Int    @id @default(autoincrement())
+  full_name      String
+  preferred_name String
+  contact_number String
+  email_address  String @unique
+  username       String @unique
+  password       String
+  type           String
 }
 
 model Clients {
@@ -49,12 +49,17 @@ model Influencer {
   contact_number            String
   email_address             String                 @unique
   additional_contact_number String
-  home_address              String?
   country                   String
-  city                      String?
+  city                      String
   state                     String
-  postcode                  String?
-  diet_preference           String?
+  postcode                  String
+  multiple_countries        Boolean?
+  additional_country        String?
+  industry                  String
+  consent_whatsapp_group    Boolean                @default(false)
+  whatsapp_invited          Boolean                @default(false)
+  community                 Boolean                @default(false)
+  invite_count              Int                    @default(0)
   accounts_id               Int[]
   influencer_campaign       Influencers_Campaign[]
 }
@@ -62,10 +67,8 @@ model Influencer {
 model Accounts {
   account_id       Int      @id @default(autoincrement())
   social_media_url String
-  media_country    String
   followers        String
-  industry         String
-  active_status    String
+  account_type     String
   platform         Platform @relation(fields: [platform_id], references: [platform_id])
   platform_id      Int
 }
@@ -73,7 +76,6 @@ model Accounts {
 model Platform {
   platform_id   Int        @id @default(autoincrement())
   platform_name String
-  platform_type String
   accounts      Accounts[]
 }
 
