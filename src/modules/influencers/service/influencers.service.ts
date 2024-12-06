@@ -1,10 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../common';
+import { ExcelProvider, PrismaService } from '../../common';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { CustomThrowError } from '../../common/controller/config';
 import { CreateAccountDto, CreateInfluencerDto, GetAccountDto, GetInfluencerDto, UpdateAccountDto, UpdateInfluencerDto } from '../model/influencers.dto';
 import { Accounts, Influencer, Platform } from '@prisma/client';
 import { InfluencersData } from '../model';
+import { MemoryStorageFile } from '@blazity/nest-file-fastify';
+import * as XLSX from "xlsx";
+import { InfluencerExcel } from '../../common/model/excel';
 
 @Injectable()
 export class InfluencersService {
@@ -320,58 +323,117 @@ export class InfluencersService {
      * @param file Excel file that contains influencer data
      * @returns Status of operation
      */
-    // public async bulkCreate(file: MemoryStorageFile | null): Promise<GetInfluencerDto[]> {
-    //     try {
-    //         if (!file) {
-    //             throw new CustomThrowError(
-    //                 "0",
-    //                 "File is not found!"
-    //             );
-    //         }
+    public async bulkCreate(file: MemoryStorageFile | null): Promise<GetInfluencerDto[]> {
+        try {
+            if (!file) {
+                throw new CustomThrowError(
+                    "0",
+                    "File is not found!"
+                );
+            }
 
-    //         const workbook = XLSX.read(file.buffer, { type: 'buffer' });
-    //         const sheet = workbook.Sheets[ExcelProvider.INFLUENCER_SHEET_NAME];
-    //         const sheetData: InfluencerExcel[] = XLSX.utils.sheet_to_json(sheet);
+            const workbook = XLSX.read(file.buffer, { type: 'buffer' });
+            const sheet = workbook.Sheets[ExcelProvider.INFLUENCER_SHEET_NAME];
+            const sheetData: InfluencerExcel[] = XLSX.utils.sheet_to_json(sheet);
 
-    //         const allNewInfluencers: GetInfluencerDto[] = [];
-    //         for (let data of sheetData) {
-    //             const influencerData: CreateInfluencerDto = {
-    //                 company_name: data[ExcelProvider.CLIENT_COMPANY_NAME],
-    //                 person_in_charge_name: data[ExcelProvider.CLIENT_PIC_NAME],
-    //                 company_email: data[ExcelProvider.CLIENT_COMPANY_EMAIL] ?? null,
-    //                 pic_email: data[ExcelProvider.CLIENT_PIC_EMAIL],
-    //                 contact_number: data[ExcelProvider.CLIENT_CONTACT].toString(),
-    //                 additional_contact_number: data[ExcelProvider.CLIENT_ADDITIONAL_CONTACT] ?? null,
-    //                 industry: data[ExcelProvider.CLIENT_INDUSTRY] ?? null,
-    //                 category: data[ExcelProvider.CLIENT_CATEGORY] ?? null,
-    //                 package: data[ExcelProvider.CLIENT_PACKAGE],
-    //                 address: data[ExcelProvider.CLIENT_ADDRESS],
-    //                 city: data[ExcelProvider.CLIENT_CITY] ?? null,
-    //                 country: data[ExcelProvider.CLIENT_COUNTRY],
-    //                 is_halal: data[ExcelProvider.CLIENT_IS_HALAL].toLowerCase() === "yes",
-    //                 postcode: data[ExcelProvider.CLIENT_POSTCODE],
-    //                 state: data[ExcelProvider.CLIENT_STATE],
-    //             }
-    //             const newInfluencer = await this.prismaService.influencer.create({ data: influencerData }) as GetClientDto;
-    //             allNewInfluencers.push(newInfluencer);
-    //         }
+            const allNewInfluencers: GetInfluencerDto[] = [];
+            for (let data of sheetData) {
+                let influencerAccountIds: number[] = [];
+                // Instagram
+                if (data[ExcelProvider.INFLUENCER_INSTAGRAM_URL]) {
+                    const platform = await this.prismaService.platform.findFirst({ where: { platform_name: "Instagram" } }) as Platform;
+                    const newAccount = await this.prismaService.accounts.create({
+                        data: {
+                            account_type: data[ExcelProvider.INFLUENCER_INSTAGRAM_ACCOUNT_TYPE],
+                            social_media_url: data[ExcelProvider.INFLUENCER_INSTAGRAM_URL],
+                            followers: data[ExcelProvider.INFLUENCER_INSTAGRAM_FOLLOWERS].toString(),
+                            platform_id: platform.platform_id
+                        }
+                    });
+                    influencerAccountIds.push(newAccount.account_id);
+                }
 
-    //         return allNewInfluencers;
-    //     } catch (error) {
-    //         if (error instanceof PrismaClientKnownRequestError) {
-    //             // known prisma client error
-    //             throw new CustomThrowError(
-    //                 error.code,
-    //                 error.message,
-    //                 error.meta
-    //             );
-    //         }
-    //         // unknown error
-    //         throw new CustomThrowError(
-    //             "-1",
-    //             error.message,
-    //             error.meta
-    //         );
-    //     }
-    // }
+                // Twitter
+                if (data[ExcelProvider.INFLUENCER_TIKTOK_URL]) {
+                    const platform = await this.prismaService.platform.findFirst({ where: { platform_name: "TikTok" } }) as Platform;
+                    const newAccount = await this.prismaService.accounts.create({
+                        data: {
+                            account_type: data[ExcelProvider.INFLUENCER_TIKTOK_ACCOUNT_TYPE],
+                            social_media_url: data[ExcelProvider.INFLUENCER_TIKTOK_URL],
+                            followers: data[ExcelProvider.INFLUENCER_TIKTOK_FOLLOWERS].toString(),
+                            platform_id: platform.platform_id
+                        }
+                    });
+                    influencerAccountIds.push(newAccount.account_id);
+                }
+
+                // Redbook
+                if (data[ExcelProvider.INFLUENCER_REDBOOK_URL]) {
+                    const platform = await this.prismaService.platform.findFirst({ where: { platform_name: "RedBook" } }) as Platform;
+                    const newAccount = await this.prismaService.accounts.create({
+                        data: {
+                            account_type: data[ExcelProvider.INFLUENCER_REDBOOK_ACCOUNT_TYPE],
+                            social_media_url: data[ExcelProvider.INFLUENCER_REDBOOK_URL],
+                            followers: data[ExcelProvider.INFLUENCER_REDBOOK_FOLLOWERS].toString(),
+                            platform_id: platform.platform_id
+                        }
+                    });
+                    influencerAccountIds.push(newAccount.account_id);
+                }
+
+                const influencerData = {
+                    full_name: data[ExcelProvider.INFLUENCER_FULL_NAME],
+                    preferred_name: data[ExcelProvider.INFLUENCER_PREFERRED_NAME] ?? data[ExcelProvider.INFLUENCER_FULL_NAME],
+                    contact_number: data[ExcelProvider.INFLUENCER_CONTACT].toString(),
+                    additional_contact_number: data[ExcelProvider.INFLUENCER_ADDITIONAL_CONTACT] ? data[ExcelProvider.INFLUENCER_ADDITIONAL_CONTACT].toString() : data[ExcelProvider.INFLUENCER_CONTACT].toString(),
+                    email_address: data[ExcelProvider.INFLUENCER_EMAIL],
+                    country: data[ExcelProvider.INFLUENCER_COUNTRY],
+                    city: data[ExcelProvider.INFLUENCER_CITY] ?? "-",
+                    state: data[ExcelProvider.INFLUENCER_STATE],
+                    postcode: data[ExcelProvider.INFLUENCER_POSTCODE] ? data[ExcelProvider.INFLUENCER_POSTCODE].toString() : "-",
+                    multiple_countries: data[ExcelProvider.INFLUENCER_MULTIPLE_COUNTRIES] ? data[ExcelProvider.INFLUENCER_MULTIPLE_COUNTRIES].toLowerCase() === "yes" : false,
+                    additional_country: data[ExcelProvider.INFLUENCER_ADDITIONAL_COUNTRY] ?? "-",
+                    industry: data[ExcelProvider.INFLUENCER_INDUSTRY],
+                    consent_whatsapp_group: data[ExcelProvider.INFLUENCER_CONSENT_WHATSAPP_GROUP].toLowerCase() === "yes",
+                    whatsapp_invited: data[ExcelProvider.INFLUENCER_WHATSAPP_INVITED].toLowerCase() === "yes",
+                    community: data[ExcelProvider.INFLUENCER_COMMUNITY].toLowerCase() === "yes",
+                    invite_count: data[ExcelProvider.INFLUENCER_INVITE_COUNT],
+                    accounts_id: influencerAccountIds
+                }
+                const newInfluencer = await this.prismaService.influencer.create({ data: influencerData });
+
+                // Get New Influencer Account
+                let influencerAccountsData: GetAccountDto[] = [];
+                for (let accountId of newInfluencer.accounts_id) {
+                    const account = await this.prismaService.accounts.findUnique({ where: { account_id: accountId } }) as Accounts;
+                    const platform = await this.prismaService.platform.findUnique({ where: { platform_id: account?.platform_id } }) as Platform;
+                    influencerAccountsData.push({
+                        ...account,
+                        platform_name: platform?.platform_name
+                    });
+                }
+                allNewInfluencers.push({
+                    ...newInfluencer,
+                    accounts: influencerAccountsData
+                } as GetInfluencerDto);
+            }
+
+            return allNewInfluencers;
+        } catch (error) {
+            if (error instanceof PrismaClientKnownRequestError) {
+                // known prisma client error
+                throw new CustomThrowError(
+                    error.code,
+                    error.message,
+                    error.meta
+                );
+            }
+            // unknown error
+            throw new CustomThrowError(
+                "-1",
+                error.message,
+                error.meta
+            );
+        }
+    }
 }

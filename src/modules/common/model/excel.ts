@@ -1,7 +1,7 @@
 export interface ClientExcel {
-    [k: string]: string
+    [k: string]: any
 }
 
 export interface InfluencerExcel {
-    [k: string]: string
+    [k: string]: any
 }

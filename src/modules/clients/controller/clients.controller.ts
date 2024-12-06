@@ -21,7 +21,7 @@ export class ClientsController {
     @Get()
     @UseGuards(UserGuard)
     @ApiOperation({ summary: 'Get all clients' })
-    @ApiResponse({ status: HttpStatus.OK, isArray: true, type: Array<GetClientDto> })
+    @ApiResponse({ status: HttpStatus.OK, isArray: true, type: GetClientDto })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
     public async getAll(): Promise<GetClientDto[]> {
         try {
@@ -38,7 +38,7 @@ export class ClientsController {
     @Get(':clientId')
     @UseGuards(UserGuard)
     @ApiOperation({ summary: 'Get client by id' })
-    @ApiResponse({ status: HttpStatus.OK, isArray: true, type: GetClientDto })
+    @ApiResponse({ status: HttpStatus.OK, type: GetClientDto })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
     public async getById(
         @Param('clientId', ParseIntPipe) clientId: number,
@@ -97,7 +97,7 @@ export class ClientsController {
             },
         },
     })
-    @ApiResponse({ status: HttpStatus.CREATED, type: Array<GetClientDto> })
+    @ApiResponse({ status: HttpStatus.CREATED, type: GetClientDto, isArray: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
     @UseInterceptors(FileFieldsInterceptor([{ name: 'file', maxCount: 1 }]))
     public async import(

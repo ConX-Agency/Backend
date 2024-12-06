@@ -1,5 +1,5 @@
 import { BadRequestException, Body, Controller, Delete, Get, HttpStatus, Param, ParseIntPipe, Patch, Post, UseGuards, UseInterceptors } from '@nestjs/common';
-import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LoggerService } from '../../common';
 import { InfluencersService } from '../service';
 import { AccountsPipe, InfluencersPipe } from '../flow';
@@ -22,7 +22,7 @@ export class InfluencersController {
     @Get()
     @UseGuards(UserGuard)
     @ApiOperation({ summary: 'Get all influencers' })
-    @ApiResponse({ status: HttpStatus.OK, isArray: true, type: Array<GetInfluencerDto>, description: "Get all influencers" })
+    @ApiResponse({ status: HttpStatus.OK, isArray: true, type: GetInfluencerDto, description: "Get all influencers" })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
     public async getAll(): Promise<GetInfluencerDto[]> {
         try {
@@ -39,7 +39,7 @@ export class InfluencersController {
     @Get(':influencerId')
     @UseGuards(UserGuard)
     @ApiOperation({ summary: 'Get influencer by ID' })
-    @ApiResponse({ status: HttpStatus.OK, isArray: true, type: GetInfluencerDto, description: "Get influencer by ID" })
+    @ApiResponse({ status: HttpStatus.OK, type: GetInfluencerDto, description: "Get influencer by ID" })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
     public async getById(
         @Param('influencerId', ParseIntPipe) influencerId: number,
@@ -72,6 +72,41 @@ export class InfluencersController {
             const newInfluencer = await this.influencersService.create(registerInfluencerDto);
             this.logger.info(`Registered new influencer with ID ${newInfluencer.influencer_id}!`);
             return newInfluencer;
+        } catch (error: unknown) {
+            if (error instanceof CustomThrowError) {
+                const { message, meta } = error;
+                throw new BadRequestException({ message, meta });
+            }
+            throw new BadRequestException(error);
+        }
+    }
+
+    @Post('/import')
+    // @UseGuards(AdminClientGuard)
+    @ApiConsumes('multipart/form-data')
+    @ApiOperation({ summary: 'Import new clients into database from Excel files' })
+    @ApiBody({
+        description: 'Excel file to upload',
+        required: true,
+        schema: {
+            type: 'object',
+            properties: {
+                file: {
+                    type: 'string',
+                    format: 'binary',
+                },
+            },
+        },
+    })
+    @ApiResponse({ status: HttpStatus.CREATED, type: GetInfluencerDto, isArray: true })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
+    @UseInterceptors(FileFieldsInterceptor([{ name: 'file', maxCount: 1 }]))
+    public async import(
+        @UploadedFiles() files: { file?: MemoryStorageFile[] },
+    ): Promise<GetInfluencerDto[]> {
+        try {
+            const newInfluencers = await this.influencersService.bulkCreate(files.file ? files.file[0] : null);
+            return newInfluencers;
         } catch (error: unknown) {
             if (error instanceof CustomThrowError) {
                 const { message, meta } = error;

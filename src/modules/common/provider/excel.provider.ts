@@ -21,12 +21,11 @@ export class ExcelProvider {
     static INFLUENCER_PREFERRED_NAME = "Preferred Name";
     static INFLUENCER_CONTACT = "Contact Number";
     static INFLUENCER_ADDITIONAL_CONTACT = "Additional Contact Number";
-    static INFLUENCER_HOME_ADDRESS = "Home Address";
+    static INFLUENCER_EMAIL = "Email Address";
     static INFLUENCER_COUNTRY = "Country";
     static INFLUENCER_CITY = "City";
     static INFLUENCER_STATE = "State";
     static INFLUENCER_POSTCODE = "Postcode";
-    static INFLUENCER_DIET_PREFERENCE = "Diet Preference";
     static INFLUENCER_INSTAGRAM_URL = "Instagram URL";
     static INFLUENCER_TIKTOK_URL = "TikTok URL";
     static INFLUENCER_REDBOOK_URL = "RedBook URL";
@@ -38,7 +37,7 @@ export class ExcelProvider {
     static INFLUENCER_REDBOOK_ACCOUNT_TYPE = "RedBook Account Type";
     static INFLUENCER_MULTIPLE_COUNTRIES = "Multiple Countries";
     static INFLUENCER_ADDITIONAL_COUNTRY = "Additional Country";
-    static INFLUENCER_INDUSTRY = "Additional Country";
+    static INFLUENCER_INDUSTRY = "Industry";
     static INFLUENCER_CONSENT_WHATSAPP_GROUP = "Consent WhatsApp Group?";
     static INFLUENCER_WHATSAPP_INVITED = "WhatsApp Invited?";
     static INFLUENCER_COMMUNITY = "Community?";
