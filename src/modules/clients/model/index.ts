@@ -1,2 +1,2 @@
-export { ClientsInput } from './clients.input';
-export { ClientsData } from './clients.data';
+export { ClientsInput, ClientsLocationInput } from './clients.input';
+export { ClientsData, ClientsLocationData } from './clients.data';

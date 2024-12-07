@@ -2,10 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { ExcelProvider, PrismaService } from '../../common';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { CustomThrowError } from '../../common/controller/config';
-import { CreateClientDto, GetClientDto, UpdateClientDto } from '../model/clients.dto';
+import { CreateClientDto, CreateClientLocationDto, GetClientDto, GetClientLocationDto, UpdateClientDto } from '../model/clients.dto';
 import { MemoryStorageFile } from '@blazity/nest-file-fastify';
 import { ClientExcel } from '../../common/model/excel';
 import * as XLSX from 'xlsx';
+import { ClientsData } from '../model';
+import { Clients, Clients_Location } from '@prisma/client';
 
 @Injectable()
 export class ClientsService {
@@ -20,8 +22,18 @@ export class ClientsService {
      */
     public async getAll(): Promise<GetClientDto[]> {
         try {
-            const clients = await this.prismaService.clients.findMany({}) as GetClientDto[];
-            return clients;
+            const clientsData: GetClientDto[] = [];
+            const clients = await this.prismaService.clients.findMany({}) as ClientsData[];
+
+            for (let client of clients) {
+                const addressData: GetClientLocationDto[] = await this.prismaService.clients_Location.findMany({ where: { client_id: client.client_id } });
+                clientsData.push({
+                    ...client,
+                    addresses: addressData
+                });
+            }
+
+            return clientsData;
         } catch (error) {
             if (error instanceof PrismaClientKnownRequestError) {
                 // known prisma client error
@@ -47,8 +59,13 @@ export class ClientsService {
      */
     public async getById(clientId: number): Promise<GetClientDto | null> {
         try {
-            const client = await this.prismaService.clients.findUnique({ where: { client_id: clientId } }) as GetClientDto;
-            return client;
+            const client = await this.prismaService.clients.findUnique({ where: { client_id: clientId } }) as ClientsData;
+            if (!client) return null;
+            const addresses: GetClientLocationDto[] = await this.prismaService.clients_Location.findMany({ where: { client_id: client.client_id } });
+            return {
+                ...client,
+                addresses
+            } as GetClientDto;
         } catch (error) {
             if (error instanceof PrismaClientKnownRequestError) {
                 // known prisma client error
@@ -73,10 +90,23 @@ export class ClientsService {
      * @param data Client details
      * @returns New client data created in the database
      */
-    public async create(data: CreateClientDto): Promise<GetClientDto> {
+    public async create(createClientData: CreateClientDto): Promise<GetClientDto> {
         try {
-            const newClient = await this.prismaService.clients.create({ data }) as GetClientDto;
-            return newClient;
+            const clientAddresses: GetClientLocationDto[] = [];
+
+            const { addresses, ...others } = createClientData;
+            const addressesData = JSON.parse(addresses) as CreateClientLocationDto[];
+            const newClient = await this.prismaService.clients.create({ data: others });
+            for (let i = 0; i < addressesData.length; i++) {
+                const newAddressData = addressesData[i];
+                const newAddress = await this.prismaService.clients_Location.create({ data: { ...newAddressData, client_id: newClient.client_id } }) as Clients_Location;
+                clientAddresses.push(newAddress);
+            }
+
+            return {
+                ...newClient,
+                addresses: clientAddresses
+            } as GetClientDto;
         } catch (error) {
             if (error instanceof PrismaClientKnownRequestError) {
                 // known prisma client error
@@ -107,10 +137,14 @@ export class ClientsService {
         updateClientDto: UpdateClientDto,
     ): Promise<GetClientDto | null> {
         try {
-            const existingClient = await this.prismaService.clients.findUnique({ where: { client_id: clientId } }) as GetClientDto;
+            const existingClient = await this.prismaService.clients.findUnique({ where: { client_id: clientId } }) as Clients;
             if (!existingClient) return null;
-            const updatedClient = await this.prismaService.clients.update({ where: { client_id: clientId }, data: updateClientDto }) as GetClientDto;
-            return updatedClient;
+            const updatedClient = await this.prismaService.clients.update({ where: { client_id: clientId }, data: updateClientDto }) as Clients;
+            const clientAddresses = await this.prismaService.clients_Location.findMany({ where: { client_id: clientId } }) as GetClientLocationDto[];
+            return {
+                ...updatedClient,
+                addresses: clientAddresses
+            } as GetClientDto;
         } catch (error) {
             if (error instanceof PrismaClientKnownRequestError) {
                 // known prisma client error
@@ -163,25 +197,34 @@ export class ClientsService {
 
             const allNewClients: GetClientDto[] = [];
             for (let data of sheetData) {
-                const clientData: CreateClientDto = {
+                const clientData = {
                     company_name: data[ExcelProvider.CLIENT_COMPANY_NAME],
                     person_in_charge_name: data[ExcelProvider.CLIENT_PIC_NAME],
-                    company_email: data[ExcelProvider.CLIENT_COMPANY_EMAIL] ?? null,
-                    pic_email: data[ExcelProvider.CLIENT_PIC_EMAIL],
+                    company_email: data[ExcelProvider.CLIENT_COMPANY_EMAIL],
                     contact_number: data[ExcelProvider.CLIENT_CONTACT].toString(),
-                    additional_contact_number: data[ExcelProvider.CLIENT_ADDITIONAL_CONTACT] ?? null,
-                    industry: data[ExcelProvider.CLIENT_INDUSTRY] ?? null,
-                    category: data[ExcelProvider.CLIENT_CATEGORY] ?? null,
-                    package: data[ExcelProvider.CLIENT_PACKAGE],
-                    address: data[ExcelProvider.CLIENT_ADDRESS],
-                    city: data[ExcelProvider.CLIENT_CITY] ?? null,
-                    country: data[ExcelProvider.CLIENT_COUNTRY],
-                    is_halal: data[ExcelProvider.CLIENT_IS_HALAL].toLowerCase() === "yes",
-                    postcode: data[ExcelProvider.CLIENT_POSTCODE],
-                    state: data[ExcelProvider.CLIENT_STATE],
+                    additional_contact_number: data[ExcelProvider.CLIENT_ADDITIONAL_CONTACT] ?? "-",
+                    industry: data[ExcelProvider.CLIENT_INDUSTRY] ?? "-",
+                    category: data[ExcelProvider.CLIENT_CATEGORY] ?? "-"
                 }
                 const newClient = await this.prismaService.clients.create({ data: clientData }) as GetClientDto;
-                allNewClients.push(newClient);
+
+                // Assume the Excel file only has 1 address for client
+                const address = data[ExcelProvider.CLIENT_ADDRESS];
+                const city = data[ExcelProvider.CLIENT_CITY] ?? "-";
+                const country = data[ExcelProvider.CLIENT_COUNTRY];
+                const postcode = data[ExcelProvider.CLIENT_POSTCODE] ?? "-";
+                const state = data[ExcelProvider.CLIENT_STATE];
+                const newAddress = await this.prismaService.clients_Location.create({
+                    data: {
+                        client_id: newClient.client_id,
+                        address,
+                        city,
+                        country,
+                        postcode,
+                        state
+                    }
+                }) as GetClientLocationDto;
+                allNewClients.push({ ...newClient, addresses: [newAddress] });
             }
 
             return allNewClients;

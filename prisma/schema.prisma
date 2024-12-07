@@ -23,23 +23,27 @@ model Users {
 }
 
 model Clients {
-  client_id                 Int        @id @default(autoincrement())
-  company_name              String     @unique
+  client_id                 Int                @id @default(autoincrement())
+  company_name              String             @unique
   person_in_charge_name     String
-  company_email             String?    @unique
-  pic_email                 String     @unique
+  company_email             String             @unique
   contact_number            String
-  additional_contact_number String?
-  industry                  String?
-  category                  String?
-  package                   String
-  country                   String
-  city                      String?
-  state                     String
-  postcode                  String?
-  address                   String
-  is_halal                  Boolean
+  additional_contact_number String
+  industry                  String
+  category                  String
   campaigns                 Campaign[]
+  clients_location          Clients_Location[]
+}
+
+model Clients_Location {
+  client_location_id Int     @id @default(autoincrement())
+  client_id          Int
+  client             Clients @relation(fields: [client_id], references: [client_id])
+  country            String
+  city               String
+  state              String
+  postcode           String
+  address            String
 }
 
 model Influencer {

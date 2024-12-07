@@ -7,7 +7,7 @@ import { CustomThrowError } from '../../common/controller/config';
 import { ErrorData } from '../../common/model/config';
 import { FileFieldsInterceptor, MemoryStorageFile } from '@blazity/nest-file-fastify';
 import { CreateAccountDto, CreateInfluencerDto, GetAccountDto, GetInfluencerDto, UpdateAccountDto, UpdateInfluencerDto } from '../model/influencers.dto';
-import { AdminGuard, AdminInfluencerGuard, UserGuard } from '../../common/security/user.guard';
+import { AdminClientGuard, AdminGuard, AdminInfluencerGuard, UserGuard } from '../../common/security/user.guard';
 import { UploadedFiles } from '@blazity/nest-file-fastify';
 
 @Controller('influencers')
@@ -82,7 +82,7 @@ export class InfluencersController {
     }
 
     @Post('/import')
-    // @UseGuards(AdminClientGuard)
+    @UseGuards(AdminClientGuard)
     @ApiConsumes('multipart/form-data')
     @ApiOperation({ summary: 'Import new clients into database from Excel files' })
     @ApiBody({

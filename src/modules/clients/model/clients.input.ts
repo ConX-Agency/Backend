@@ -1,5 +1,5 @@
 import { PickType } from '@nestjs/swagger';
-import { ClientsData } from './clients.data';
+import { ClientsData, ClientsLocationData } from './clients.data';
 
 export class ClientsInput extends PickType(
     ClientsData,
@@ -7,17 +7,21 @@ export class ClientsInput extends PickType(
         'company_name',
         'person_in_charge_name',
         'company_email',
-        'pic_email',
         'contact_number',
         'additional_contact_number',
         'industry',
-        'category',
-        'package',
+        'category'
+    ] as const
+) { }
+
+export class ClientsLocationInput extends PickType(
+    ClientsLocationData,
+    [
+        'client_id',
         'country',
         'city',
         'state',
         'postcode',
-        'address',
-        'is_halal',
+        'address'
     ] as const
 ) { }

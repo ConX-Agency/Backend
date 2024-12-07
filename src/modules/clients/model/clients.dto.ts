@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
-import { IsOptional, IsString, IsEmail, IsBoolean, IsNumber } from 'class-validator';
+import { IsOptional, IsString, IsEmail, IsNumber, IsArray } from 'class-validator';
 
 export class GetClientDto {
     @ApiProperty({ description: 'Client ID', example: '1' })
@@ -17,11 +16,7 @@ export class GetClientDto {
 
     @ApiProperty({ description: 'Company Email', example: 'traverseX@mail.com' })
     @IsEmail()
-    company_email: string | null;
-
-    @ApiProperty({ description: 'Person In Charge Email', example: 'john@traversex@mail.com' })
-    @IsString()
-    pic_email: string;
+    company_email: string;
 
     @ApiProperty({ description: 'Contact Number', example: '+60112312312' })
     @IsString()
@@ -29,43 +24,19 @@ export class GetClientDto {
 
     @ApiProperty({ description: 'Additional Contact Number', example: '+6011111111' })
     @IsString()
-    additional_contact_number: string | null;
+    additional_contact_number: string;
 
     @ApiProperty({ description: 'Industry', example: 'Food & Beverages' })
     @IsString()
-    industry: string | null;
+    industry: string;
 
     @ApiProperty({ description: 'Category', example: 'Strategic' })
     @IsString()
-    category: string | null;
+    category: string;
 
-    @ApiProperty({ description: 'Package', example: 'Gold ($188)' })
-    @IsString()
-    package: string;
-
-    @ApiProperty({ description: 'Country', example: 'Malaysia' })
-    @IsString()
-    country: string;
-
-    @ApiProperty({ description: 'City', example: 'Kuala Lumpur' })
-    @IsString()
-    city: string | null;
-
-    @ApiProperty({ description: 'State', example: 'Selangor' })
-    @IsString()
-    state: string;
-
-    @ApiProperty({ description: 'Postcode', example: '51000' })
-    @IsString()
-    postcode: string | null;
-
-    @ApiProperty({ description: 'Address', example: '[Company address]' })
-    @IsString()
-    address: string;
-
-    @ApiProperty({ description: 'Is Halal', example: true })
-    @IsBoolean()
-    is_halal: boolean;
+    @ApiProperty({ description: 'Addresses', example: "[Addresses]" })
+    @IsArray()
+    addresses: GetClientLocationDto[];
 }
 
 export class CreateClientDto {
@@ -77,64 +48,29 @@ export class CreateClientDto {
     @IsString()
     person_in_charge_name: string;
 
-    @ApiProperty({ description: 'Company Email', example: 'traverseX@mail.com', required: false })
-    @IsOptional()
+    @ApiProperty({ description: 'Company Email', example: 'traverseX@mail.com' })
     @IsEmail()
-    company_email: string | null;
-
-    @ApiProperty({ description: 'Person In Charge Email', example: 'john@traversex@mail.com' })
-    @IsString()
-    pic_email: string;
+    company_email: string;
 
     @ApiProperty({ description: 'Contact Number', example: '+60112312312' })
     @IsString()
     contact_number: string;
 
     @ApiProperty({ description: 'Additional Contact Number', example: '+6011111111' })
-    @IsOptional()
     @IsString()
-    additional_contact_number: string | null;
+    additional_contact_number: string;
 
-    @ApiProperty({ description: 'Industry', example: 'Food & Beverages', required: false })
-    @IsOptional()
+    @ApiProperty({ description: 'Industry', example: 'Food & Beverages' })
     @IsString()
-    industry: string | null;
+    industry: string;
 
-    @ApiProperty({ description: 'Category', example: 'Strategic', required: false })
-    @IsOptional()
+    @ApiProperty({ description: 'Category', example: 'Strategic' })
     @IsString()
-    category: string | null;
+    category: string;
 
-    @ApiProperty({ description: 'Package', example: 'Gold ($188)' })
+    @ApiProperty({ description: 'Addresses Data Array (CreateClientLocationDto type) (Need to JSON Stringify)' })
     @IsString()
-    package: string;
-
-    @ApiProperty({ description: 'Country', example: 'Malaysia' })
-    @IsString()
-    country: string;
-
-    @ApiProperty({ description: 'City', example: 'Kuala Lumpur', required: false })
-    @IsOptional()
-    @IsString()
-    city: string | null;
-
-    @ApiProperty({ description: 'State', example: 'Selangor' })
-    @IsString()
-    state: string;
-
-    @ApiProperty({ description: 'Postcode', example: '51000', required: false })
-    @IsOptional()
-    @IsString()
-    postcode: string | null;
-
-    @ApiProperty({ description: 'Address', example: '[Company address]' })
-    @IsString()
-    address: string;
-
-    @ApiProperty({ description: 'Is Halal', example: true })
-    @Transform(({ value }) => value === 'true')
-    @IsBoolean()
-    is_halal: boolean;
+    addresses: string;
 }
 
 export class UpdateClientDto {
@@ -152,11 +88,6 @@ export class UpdateClientDto {
     @IsOptional()
     @IsEmail()
     company_email?: string;
-
-    @ApiProperty({ description: 'Person In Charge Email', example: 'john@traversex@mail.com', required: false })
-    @IsOptional()
-    @IsString()
-    pic_email?: string;
 
     @ApiProperty({ description: 'Contact Number', example: '+60112312312', required: false })
     @IsOptional()
@@ -177,40 +108,93 @@ export class UpdateClientDto {
     @IsOptional()
     @IsString()
     category?: string;
+}
 
-    @ApiProperty({ description: 'Package', example: 'Gold ($188)', required: false })
-    @IsOptional()
+export class GetClientLocationDto {
+    @ApiProperty({ description: 'Client Location ID', example: '1' })
+    @IsNumber()
+    client_location_id: number;
+
+    @ApiProperty({ description: 'Client ID', example: '1' })
+    @IsNumber()
+    client_id: number;
+
+    @ApiProperty({ description: 'Country', example: 'Australia' })
     @IsString()
-    package?: string;
+    country: string;
 
-    @ApiProperty({ description: 'Country', example: 'Malaysia', required: false })
+    @ApiProperty({ description: 'City', example: 'Melbourne' })
+    @IsString()
+    city: string;
+
+    @ApiProperty({ description: 'State', example: 'Venice' })
+    @IsString()
+    state: string;
+
+    @ApiProperty({ description: 'Postcode', example: '68000' })
+    @IsString()
+    postcode: string;
+
+    @ApiProperty({ description: 'Address', example: '[Address]' })
+    @IsString()
+    address: string;
+}
+
+export class CreateClientLocationDto {
+    @ApiProperty({ description: 'Client ID', example: '1' })
+    @IsOptional()
+    @IsNumber()
+    client_id?: number;
+
+    @ApiProperty({ description: 'Country', example: 'Australia' })
+    @IsString()
+    country: string;
+
+    @ApiProperty({ description: 'City', example: 'Melbourne' })
+    @IsString()
+    city: string;
+
+    @ApiProperty({ description: 'State', example: 'Venice' })
+    @IsString()
+    state: string;
+
+    @ApiProperty({ description: 'Postcode', example: '68000' })
+    @IsString()
+    postcode: string;
+
+    @ApiProperty({ description: 'Address', example: '[Address]' })
+    @IsString()
+    address: string;
+}
+
+export class UpdateClientLocationDto {
+    @ApiProperty({ description: 'Client ID', example: '1', required: false })
+    @IsOptional()
+    @IsNumber()
+    client_id?: number;
+
+    @ApiProperty({ description: 'Country', example: 'Australia', required: false })
     @IsOptional()
     @IsString()
     country?: string;
 
-    @ApiProperty({ description: 'City', example: 'Kuala Lumpur', required: false })
+    @ApiProperty({ description: 'City', example: 'Melbourne', required: false })
     @IsOptional()
     @IsString()
     city?: string;
 
-    @ApiProperty({ description: 'State', example: 'Selangor', required: false })
+    @ApiProperty({ description: 'State', example: 'Venice', required: false })
     @IsOptional()
     @IsString()
     state?: string;
 
-    @ApiProperty({ description: 'Postcode', example: '51000', required: false })
+    @ApiProperty({ description: 'Postcode', example: '68000', required: false })
     @IsOptional()
     @IsString()
     postcode?: string;
 
-    @ApiProperty({ description: 'Address', example: '[Company address]', required: false })
+    @ApiProperty({ description: 'Address', example: '[Address]', required: false })
     @IsOptional()
     @IsString()
     address?: string;
-
-    @ApiProperty({ description: 'Is Halal', example: true, required: false })
-    @IsOptional()
-    @Transform(({ value }) => value === 'true')
-    @IsBoolean()
-    is_halal?: boolean;
 }
