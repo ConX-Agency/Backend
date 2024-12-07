@@ -5,7 +5,7 @@ import { ClientsService } from '../service';
 import { ClientsPipe } from '../flow';
 import { CustomThrowError } from '../../common/controller/config';
 import { ErrorData } from '../../common/model/config';
-import { FileFieldsInterceptor, MemoryStorageFile, UploadedFiles } from '@blazity/nest-file-fastify';
+import { FileFieldsInterceptor, MemoryStorageFile, UploadedFiles } from 'nest-file-fastify';
 import { CreateClientDto, GetClientDto, UpdateClientDto } from '../model/clients.dto';
 import { AdminClientGuard, UserGuard } from '../../common/security/user.guard';
 

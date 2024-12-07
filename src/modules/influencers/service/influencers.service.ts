@@ -5,7 +5,7 @@ import { CustomThrowError } from '../../common/controller/config';
 import { CreateAccountDto, CreateInfluencerDto, GetAccountDto, GetInfluencerDto, UpdateAccountDto, UpdateInfluencerDto } from '../model/influencers.dto';
 import { Accounts, Influencer, Platform } from '@prisma/client';
 import { InfluencersData } from '../model';
-import { MemoryStorageFile } from '@blazity/nest-file-fastify';
+import { MemoryStorageFile } from 'nest-file-fastify';
 import * as XLSX from "xlsx";
 import { InfluencerExcel } from '../../common/model/excel';
 

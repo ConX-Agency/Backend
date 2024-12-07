@@ -5,10 +5,10 @@ import { UsersService } from '../service';
 import { UsersPipe } from '../flow';
 import { CustomThrowError } from '../../common/controller/config';
 import { ErrorData } from '../../common/model/config';
-import { FileFieldsInterceptor, MemoryStorageFile } from '@blazity/nest-file-fastify';
+import { FileFieldsInterceptor, MemoryStorageFile } from 'nest-file-fastify';
 import { CreateUserDto, GetUserDto, LoginDto, LoginUserDataDto, UpdateUserDto } from '../model/users.dto';
 import { AdminGuard, UserGuard } from '../../common/security/user.guard';
-import { UploadedFiles } from '@blazity/nest-file-fastify';
+import { UploadedFiles } from 'nest-file-fastify';
 
 @Controller('users')
 @ApiTags('Users')

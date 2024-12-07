@@ -3,7 +3,7 @@ import { ExcelProvider, PrismaService } from '../../common';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { CustomThrowError } from '../../common/controller/config';
 import { CreateClientDto, CreateClientLocationDto, GetClientDto, GetClientLocationDto, UpdateClientDto } from '../model/clients.dto';
-import { MemoryStorageFile } from '@blazity/nest-file-fastify';
+import { MemoryStorageFile } from 'nest-file-fastify';
 import { ClientExcel } from '../../common/model/excel';
 import * as XLSX from 'xlsx';
 import { ClientsData } from '../model';

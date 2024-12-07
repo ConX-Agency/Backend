@@ -5,10 +5,10 @@ import { InfluencersService } from '../service';
 import { AccountsPipe, InfluencersPipe } from '../flow';
 import { CustomThrowError } from '../../common/controller/config';
 import { ErrorData } from '../../common/model/config';
-import { FileFieldsInterceptor, MemoryStorageFile } from '@blazity/nest-file-fastify';
+import { FileFieldsInterceptor, MemoryStorageFile } from 'nest-file-fastify';
 import { CreateAccountDto, CreateInfluencerDto, GetAccountDto, GetInfluencerDto, UpdateAccountDto, UpdateInfluencerDto } from '../model/influencers.dto';
 import { AdminClientGuard, AdminGuard, AdminInfluencerGuard, UserGuard } from '../../common/security/user.guard';
-import { UploadedFiles } from '@blazity/nest-file-fastify';
+import { UploadedFiles } from 'nest-file-fastify';
 
 @Controller('influencers')
 @ApiTags('Influencers')
