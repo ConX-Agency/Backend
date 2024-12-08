@@ -19,8 +19,7 @@ export class InfluencersInput extends PickType(
         'consent_whatsapp_group',
         'whatsapp_invited',
         'community',
-        'invite_count',
-        'accounts_id'
+        'invite_count'
     ] as const
 ) { }
 
@@ -30,6 +29,7 @@ export class AccountsInput extends PickType(
         'platform_id',
         'social_media_url',
         'followers',
-        'account_type'
+        'account_type',
+        'influencer_id'
     ] as const
 ) { }

@@ -38,7 +38,7 @@ model Clients {
 model Clients_Location {
   client_location_id Int     @id @default(autoincrement())
   client_id          Int
-  client             Clients @relation(fields: [client_id], references: [client_id])
+  client             Clients @relation(fields: [client_id], references: [client_id], onDelete: Cascade)
   country            String
   city               String
   state              String
@@ -64,17 +64,19 @@ model Influencer {
   whatsapp_invited          Boolean                @default(false)
   community                 Boolean                @default(false)
   invite_count              Int                    @default(0)
-  accounts_id               Int[]
   influencer_campaign       Influencers_Campaign[]
+  accounts                  Accounts[]
 }
 
 model Accounts {
-  account_id       Int      @id @default(autoincrement())
+  account_id       Int        @id @default(autoincrement())
   social_media_url String
   followers        String
   account_type     String
-  platform         Platform @relation(fields: [platform_id], references: [platform_id])
+  platform         Platform   @relation(fields: [platform_id], references: [platform_id], onDelete: Cascade)
   platform_id      Int
+  influencer_id    Int
+  influencer       Influencer @relation(fields: [influencer_id], references: [influencer_id], onDelete: Cascade)
 }
 
 model Platform {
@@ -93,7 +95,7 @@ model Campaign {
   max_influencers      Int
   min_influencers      Int
   kpi_status           String
-  client               Clients                @relation(fields: [client_id], references: [client_id])
+  client               Clients                @relation(fields: [client_id], references: [client_id], onDelete: Cascade)
   offers_card          Offers_Card[]
   influencers_campaign Influencers_Campaign[]
 }
@@ -109,8 +111,8 @@ model Influencers_Campaign {
   status                   String
   message_sent_date        DateTime
   influencer_response_date DateTime
-  influencer               Influencer @relation(fields: [influencer_id], references: [influencer_id])
-  campaign                 Campaign   @relation(fields: [campaign_id], references: [campaign_id])
+  influencer               Influencer @relation(fields: [influencer_id], references: [influencer_id], onDelete: Cascade)
+  campaign                 Campaign   @relation(fields: [campaign_id], references: [campaign_id], onDelete: Cascade)
 }
 
 model Offers_Card {
@@ -123,5 +125,5 @@ model Offers_Card {
   key_message              String
   food_products_to_feature String
   max_booking_pax          Int
-  campaign                 Campaign @relation(fields: [campaign_id], references: [campaign_id])
+  campaign                 Campaign @relation(fields: [campaign_id], references: [campaign_id], onDelete: Cascade)
 }

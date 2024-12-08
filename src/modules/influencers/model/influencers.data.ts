@@ -19,7 +19,6 @@ export class InfluencersData {
     public readonly whatsapp_invited: boolean;
     public readonly community: boolean;
     public readonly invite_count: number;
-    public readonly accounts_id: number[];
 
     public constructor(entity: Influencer) {
         this.influencer_id = entity.influencer_id;
@@ -39,7 +38,6 @@ export class InfluencersData {
         this.whatsapp_invited = entity.whatsapp_invited;
         this.community = entity.community;
         this.invite_count = entity.invite_count;
-        this.accounts_id = entity.accounts_id;
     }
 }
 
@@ -50,6 +48,7 @@ export class AccountsData {
     public readonly social_media_url: string;
     public readonly followers: string;
     public readonly account_type: string;
+    public readonly influencer_id: number;
 
     public constructor(entity: Accounts) {
         this.account_id = entity.account_id;
@@ -57,5 +56,6 @@ export class AccountsData {
         this.social_media_url = entity.social_media_url;
         this.followers = entity.followers;
         this.account_type = entity.account_type;
+        this.influencer_id = entity.influencer_id;
     }
 }

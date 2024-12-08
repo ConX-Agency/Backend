@@ -162,7 +162,7 @@ export class InfluencersController {
         }
     }
 
-    @Post('/accounts/:influencerId')
+    @Post('/accounts')
     @UseGuards(AdminInfluencerGuard)
     @ApiConsumes('multipart/form-data')
     @ApiOperation({ summary: 'Create new account' })
@@ -170,11 +170,10 @@ export class InfluencersController {
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
     @UseInterceptors(FileFieldsInterceptor([{ name: 'image', maxCount: 1 }]))
     public async createAccount(
-        @Param('influencerId', ParseIntPipe) influencerId: number,
         @Body(AccountsPipe) createAccountsDto: CreateAccountDto,
     ): Promise<GetAccountDto> {
         try {
-            const newAccount = await this.influencersService.createAccount(influencerId, createAccountsDto);
+            const newAccount = await this.influencersService.createAccount(createAccountsDto);
             if (!newAccount) throw new BadRequestException(`Influencer does not exist!`);
             this.logger.info(`Registered new account with ID ${newAccount?.account_id}!`);
             return newAccount;

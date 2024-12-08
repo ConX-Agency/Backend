@@ -26,18 +26,27 @@ export class InfluencersService {
             const influencers = await this.prismaService.influencer.findMany({}) as InfluencersData[];
 
             for (let influencer of influencers) {
-                const accountsData: GetAccountDto[] = [];
-                for (let accountId of influencer.accounts_id) {
-                    const account = await this.prismaService.accounts.findUnique({ where: { account_id: accountId } }) as Accounts;
-                    const platform = await this.prismaService.platform.findUnique({ where: { platform_id: account?.platform_id } }) as Platform;
-                    accountsData.push({
+                let accountData: GetAccountDto[] = [];
+                const accounts = await this.prismaService.accounts.findMany({
+                    where: { influencer_id: influencer.influencer_id }, include: {
+                        platform: {
+                            select: {
+                                platform_name: true
+                            }
+                        }
+                    }
+                });
+
+                for (let account of accounts) {
+                    accountData.push({
                         ...account,
-                        platform_name: platform?.platform_name
+                        platform_name: account.platform.platform_name
                     })
                 }
+
                 influencersData.push({
                     ...influencer,
-                    accounts: accountsData
+                    accounts: accountData
                 });
             }
 
@@ -71,13 +80,22 @@ export class InfluencersService {
             const accountsData: GetAccountDto[] = [];
 
             if (!influencer) return null;
-            for (let accountId of influencer.accounts_id) {
-                const account = await this.prismaService.accounts.findUnique({ where: { account_id: accountId } }) as Accounts;
-                const platform = await this.prismaService.platform.findUnique({ where: { platform_id: account?.platform_id } }) as Platform;
-                accountsData.push({
+            let accountData: GetAccountDto[] = [];
+            const accounts = await this.prismaService.accounts.findMany({
+                where: { influencer_id: influencer.influencer_id }, include: {
+                    platform: {
+                        select: {
+                            platform_name: true
+                        }
+                    }
+                }
+            });
+
+            for (let account of accounts) {
+                accountData.push({
                     ...account,
-                    platform_name: platform?.platform_name
-                });
+                    platform_name: account.platform.platform_name
+                })
             }
 
             return {
@@ -105,34 +123,23 @@ export class InfluencersService {
     /**
      * Create a new influencer (with account) record
      *
-     * @param createInfluencerDto Influencer (and account) details
+     * @param createInfluencerData Influencer (and account) details
      * @returns New influencer (and account) data created in the database
      */
-    public async create(createInfluencerDto: CreateInfluencerDto): Promise<GetInfluencerDto> {
+    public async create(createInfluencerData: CreateInfluencerDto): Promise<GetInfluencerDto> {
         try {
-            const influencerAccountIds: number[] = [];          // Stores all newly created accounts' ids
-            const influencerAccounts: GetAccountDto[] = [];     // Stores all newly created accounts
+            const influencerAccounts: GetAccountDto[] = [];
 
-            const { accounts, ...others } = createInfluencerDto;
-            const accountsData = JSON.parse(accounts);
+            const { accounts, ...others } = createInfluencerData;
+            const accountsData = JSON.parse(accounts) as CreateAccountDto[];
+            const newInfluencer = await this.prismaService.influencer.create({ data: others });
             for (let i = 0; i < accountsData.length; i++) {
-                const newAccountData = accountsData[i] as CreateAccountDto;
-                const newAccount = await this.prismaService.accounts.create({ data: newAccountData }) as Accounts;
-                influencerAccountIds.push(newAccount.account_id);
-
-                const platform = await this.prismaService.platform.findUnique({ where: { platform_id: newAccount.platform_id } }) as Platform;
-                influencerAccounts.push({
-                    ...newAccount,
-                    platform_name: platform?.platform_name
-                });
+                const newAccountData = accountsData[i];
+                const platform = await this.prismaService.platform.findUnique({ where: { platform_id: newAccountData.platform_id } }) as Platform;
+                const newAccount = await this.prismaService.accounts.create({ data: { ...newAccountData, influencer_id: newInfluencer.influencer_id } }) as Accounts;
+                influencerAccounts.push({ ...newAccount, platform_name: platform.platform_name });
             }
 
-            const newInfluencer = await this.prismaService.influencer.create({
-                data: {
-                    ...others,
-                    accounts_id: influencerAccountIds
-                }
-            });
             return {
                 ...newInfluencer,
                 accounts: influencerAccounts
@@ -159,32 +166,39 @@ export class InfluencersService {
      * Update influencer record
      *
      * @param influencerId Influencer id
-     * @param updateInfluencerDto New influencer details
+     * @param updateInfluencerData New influencer details
      * @returns New influencer data updated in the database
      */
     public async update(
         influencerId: number,
-        updateInfluencerDto: UpdateInfluencerDto,
+        updateInfluencerData: UpdateInfluencerDto,
     ): Promise<GetInfluencerDto | null> {
         try {
             const existingInfluencer = await this.prismaService.influencer.findUnique({ where: { influencer_id: influencerId } }) as Influencer;
-            const accountsData: GetAccountDto[] = [];
-
             if (!existingInfluencer) return null;
-            const updatedInfluencer = await this.prismaService.influencer.update({ where: { influencer_id: influencerId }, data: updateInfluencerDto }) as Influencer;
+            const updatedInfluencer = await this.prismaService.influencer.update({ where: { influencer_id: influencerId }, data: updateInfluencerData }) as Influencer;
 
-            for (let accountId of updatedInfluencer.accounts_id) {
-                const account = await this.prismaService.accounts.findUnique({ where: { account_id: accountId } }) as Accounts;
-                const platform = await this.prismaService.platform.findUnique({ where: { platform_id: account?.platform_id } }) as Platform;
-                accountsData.push({
+            let accountData: GetAccountDto[] = [];
+            const accounts = await this.prismaService.accounts.findMany({
+                where: { influencer_id: influencerId }, include: {
+                    platform: {
+                        select: {
+                            platform_name: true
+                        }
+                    }
+                }
+            });
+
+            for (let account of accounts) {
+                accountData.push({
                     ...account,
-                    platform_name: platform?.platform_name
-                });
+                    platform_name: account.platform.platform_name
+                })
             }
 
             return {
                 ...updatedInfluencer,
-                accounts: accountsData
+                accounts: accountData
             } as GetInfluencerDto;
         } catch (error) {
             if (error instanceof PrismaClientKnownRequestError) {
@@ -220,19 +234,17 @@ export class InfluencersService {
     /**
      * Create a new account (for influencer) record
      *
-     * @param createAccountDto Account details
+     * @param createAccountData Account details
      * @returns New account data created in the database
      */
-    public async createAccount(influencerId: number, createAccountDto: CreateAccountDto): Promise<GetAccountDto | null> {
+    public async createAccount(createAccountData: CreateAccountDto): Promise<GetAccountDto | null> {
         try {
-            const existingInfluencer = await this.prismaService.influencer.findUnique({ where: { influencer_id: influencerId } }) as Influencer;
+            const existingInfluencer = await this.prismaService.influencer.findUnique({ where: { influencer_id: createAccountData.influencer_id } }) as Influencer;
             if (!existingInfluencer) return null;
 
-            const newAccount = await this.prismaService.accounts.create({ data: createAccountDto }) as Accounts;
-            const newInfluencerAccountIds = [...existingInfluencer.accounts_id, newAccount.account_id];
-            await this.prismaService.influencer.update({ where: { influencer_id: influencerId }, data: { accounts_id: newInfluencerAccountIds } }) as Influencer;
-
+            const newAccount = await this.prismaService.accounts.create({ data: createAccountData }) as Accounts;
             const platform = await this.prismaService.platform.findUnique({ where: { platform_id: newAccount.platform_id } }) as Platform;
+
             return {
                 ...newAccount,
                 platform_name: platform.platform_name
@@ -259,18 +271,18 @@ export class InfluencersService {
      * Update account (for influencer) record
      *
      * @param accountId Account id
-     * @param updateAccountDto New account details
+     * @param updateAccountData New account details
      * @returns New influencer data updated in the database
      */
     public async updateAccount(
         accountId: number,
-        updateAccountDto: UpdateAccountDto,
+        updateAccountData: UpdateAccountDto,
     ): Promise<GetAccountDto | null> {
         try {
             const existingAccount = await this.prismaService.accounts.findUnique({ where: { account_id: accountId } }) as Accounts;
             if (!existingAccount) return null;
-            const newAccount = await this.prismaService.accounts.update({ where: { account_id: accountId }, data: updateAccountDto }) as Accounts;
 
+            const newAccount = await this.prismaService.accounts.update({ where: { account_id: accountId }, data: updateAccountData }) as Accounts;
             const platform = await this.prismaService.platform.findUnique({ where: { platform_id: newAccount.platform_id } }) as Platform;
             return {
                 ...newAccount,
@@ -303,16 +315,6 @@ export class InfluencersService {
     public async deleteAccount(accountId: number): Promise<boolean> {
         const existingAccount = await this.prismaService.accounts.findUnique({ where: { account_id: accountId } }) as Accounts;
         if (!existingAccount) return false;
-
-        const allInfluencers = await this.prismaService.influencer.findMany({}) as Influencer[];
-        for (let influencer of allInfluencers) {
-            const indexOfAccountId = influencer.accounts_id.indexOf(existingAccount.account_id);
-            if (indexOfAccountId >= 0) {
-                influencer.accounts_id.splice(indexOfAccountId, 1);
-                await this.prismaService.influencer.update({ where: { influencer_id: influencer.influencer_id }, data: { accounts_id: influencer.accounts_id } })
-            }
-        }
-
         await this.prismaService.accounts.delete({ where: { account_id: accountId } });
         return true;
     }
@@ -338,49 +340,6 @@ export class InfluencersService {
 
             const allNewInfluencers: GetInfluencerDto[] = [];
             for (let data of sheetData) {
-                let influencerAccountIds: number[] = [];
-                // Instagram
-                if (data[ExcelProvider.INFLUENCER_INSTAGRAM_URL]) {
-                    const platform = await this.prismaService.platform.findFirst({ where: { platform_name: "Instagram" } }) as Platform;
-                    const newAccount = await this.prismaService.accounts.create({
-                        data: {
-                            account_type: data[ExcelProvider.INFLUENCER_INSTAGRAM_ACCOUNT_TYPE],
-                            social_media_url: data[ExcelProvider.INFLUENCER_INSTAGRAM_URL],
-                            followers: data[ExcelProvider.INFLUENCER_INSTAGRAM_FOLLOWERS].toString(),
-                            platform_id: platform.platform_id
-                        }
-                    });
-                    influencerAccountIds.push(newAccount.account_id);
-                }
-
-                // Twitter
-                if (data[ExcelProvider.INFLUENCER_TIKTOK_URL]) {
-                    const platform = await this.prismaService.platform.findFirst({ where: { platform_name: "TikTok" } }) as Platform;
-                    const newAccount = await this.prismaService.accounts.create({
-                        data: {
-                            account_type: data[ExcelProvider.INFLUENCER_TIKTOK_ACCOUNT_TYPE],
-                            social_media_url: data[ExcelProvider.INFLUENCER_TIKTOK_URL],
-                            followers: data[ExcelProvider.INFLUENCER_TIKTOK_FOLLOWERS].toString(),
-                            platform_id: platform.platform_id
-                        }
-                    });
-                    influencerAccountIds.push(newAccount.account_id);
-                }
-
-                // Redbook
-                if (data[ExcelProvider.INFLUENCER_REDBOOK_URL]) {
-                    const platform = await this.prismaService.platform.findFirst({ where: { platform_name: "RedBook" } }) as Platform;
-                    const newAccount = await this.prismaService.accounts.create({
-                        data: {
-                            account_type: data[ExcelProvider.INFLUENCER_REDBOOK_ACCOUNT_TYPE],
-                            social_media_url: data[ExcelProvider.INFLUENCER_REDBOOK_URL],
-                            followers: data[ExcelProvider.INFLUENCER_REDBOOK_FOLLOWERS].toString(),
-                            platform_id: platform.platform_id
-                        }
-                    });
-                    influencerAccountIds.push(newAccount.account_id);
-                }
-
                 const influencerData = {
                     full_name: data[ExcelProvider.INFLUENCER_FULL_NAME],
                     preferred_name: data[ExcelProvider.INFLUENCER_PREFERRED_NAME] ?? data[ExcelProvider.INFLUENCER_FULL_NAME],
@@ -397,24 +356,59 @@ export class InfluencersService {
                     consent_whatsapp_group: data[ExcelProvider.INFLUENCER_CONSENT_WHATSAPP_GROUP].toLowerCase() === "yes",
                     whatsapp_invited: data[ExcelProvider.INFLUENCER_WHATSAPP_INVITED].toLowerCase() === "yes",
                     community: data[ExcelProvider.INFLUENCER_COMMUNITY].toLowerCase() === "yes",
-                    invite_count: data[ExcelProvider.INFLUENCER_INVITE_COUNT],
-                    accounts_id: influencerAccountIds
+                    invite_count: data[ExcelProvider.INFLUENCER_INVITE_COUNT]
                 }
                 const newInfluencer = await this.prismaService.influencer.create({ data: influencerData });
+                let newAccounts: GetAccountDto[] = [];
 
-                // Get New Influencer Account
-                let influencerAccountsData: GetAccountDto[] = [];
-                for (let accountId of newInfluencer.accounts_id) {
-                    const account = await this.prismaService.accounts.findUnique({ where: { account_id: accountId } }) as Accounts;
-                    const platform = await this.prismaService.platform.findUnique({ where: { platform_id: account?.platform_id } }) as Platform;
-                    influencerAccountsData.push({
-                        ...account,
-                        platform_name: platform?.platform_name
+                // Instagram
+                if (data[ExcelProvider.INFLUENCER_INSTAGRAM_URL]) {
+                    const platform = await this.prismaService.platform.findFirst({ where: { platform_name: "Instagram" } }) as Platform;
+                    const newAccount = await this.prismaService.accounts.create({
+                        data: {
+                            account_type: data[ExcelProvider.INFLUENCER_INSTAGRAM_ACCOUNT_TYPE],
+                            social_media_url: data[ExcelProvider.INFLUENCER_INSTAGRAM_URL],
+                            followers: data[ExcelProvider.INFLUENCER_INSTAGRAM_FOLLOWERS].toString(),
+                            platform_id: platform.platform_id,
+                            influencer_id: newInfluencer.influencer_id
+                        }
                     });
+                    newAccounts.push({ ...newAccount, platform_name: platform.platform_name });
                 }
+
+                // Twitter
+                if (data[ExcelProvider.INFLUENCER_TIKTOK_URL]) {
+                    const platform = await this.prismaService.platform.findFirst({ where: { platform_name: "TikTok" } }) as Platform;
+                    const newAccount = await this.prismaService.accounts.create({
+                        data: {
+                            account_type: data[ExcelProvider.INFLUENCER_TIKTOK_ACCOUNT_TYPE],
+                            social_media_url: data[ExcelProvider.INFLUENCER_TIKTOK_URL],
+                            followers: data[ExcelProvider.INFLUENCER_TIKTOK_FOLLOWERS].toString(),
+                            platform_id: platform.platform_id,
+                            influencer_id: newInfluencer.influencer_id
+                        }
+                    });
+                    newAccounts.push({ ...newAccount, platform_name: platform.platform_name });
+                }
+
+                // Redbook
+                if (data[ExcelProvider.INFLUENCER_REDBOOK_URL]) {
+                    const platform = await this.prismaService.platform.findFirst({ where: { platform_name: "RedBook" } }) as Platform;
+                    const newAccount = await this.prismaService.accounts.create({
+                        data: {
+                            account_type: data[ExcelProvider.INFLUENCER_REDBOOK_ACCOUNT_TYPE],
+                            social_media_url: data[ExcelProvider.INFLUENCER_REDBOOK_URL],
+                            followers: data[ExcelProvider.INFLUENCER_REDBOOK_FOLLOWERS].toString(),
+                            platform_id: platform.platform_id,
+                            influencer_id: newInfluencer.influencer_id
+                        }
+                    });
+                    newAccounts.push({ ...newAccount, platform_name: platform.platform_name });
+                }
+
                 allNewInfluencers.push({
                     ...newInfluencer,
-                    accounts: influencerAccountsData
+                    accounts: newAccounts
                 } as GetInfluencerDto);
             }
 

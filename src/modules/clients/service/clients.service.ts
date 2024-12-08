@@ -129,17 +129,17 @@ export class ClientsService {
      * Update client record
      *
      * @param clientId Client id
-     * @param updateClientDto New client details
+     * @param updateClientData New client details
      * @returns New client data updated in the database
      */
     public async update(
         clientId: number,
-        updateClientDto: UpdateClientDto,
+        updateClientData: UpdateClientDto,
     ): Promise<GetClientDto | null> {
         try {
             const existingClient = await this.prismaService.clients.findUnique({ where: { client_id: clientId } }) as Clients;
             if (!existingClient) return null;
-            const updatedClient = await this.prismaService.clients.update({ where: { client_id: clientId }, data: updateClientDto }) as Clients;
+            const updatedClient = await this.prismaService.clients.update({ where: { client_id: clientId }, data: updateClientData }) as Clients;
             const clientAddresses = await this.prismaService.clients_Location.findMany({ where: { client_id: clientId } }) as GetClientLocationDto[];
             return {
                 ...updatedClient,

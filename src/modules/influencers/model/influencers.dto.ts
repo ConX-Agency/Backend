@@ -2,6 +2,85 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsOptional, IsString, IsEmail, IsArray, IsNumber, IsBoolean } from 'class-validator';
 
+export class GetAccountDto {
+    @ApiProperty({ description: 'Account ID', example: '1' })
+    @IsNumber()
+    account_id: number;
+
+    @ApiProperty({ description: 'Influencer ID', example: '1' })
+    @IsNumber()
+    influencer_id: number;
+
+    @ApiProperty({ description: 'Platform Name', example: 'Instagram' })
+    @IsString()
+    platform_name: string;
+
+    @ApiProperty({ description: 'Account Type', example: 'Social Media' })
+    @IsString()
+    account_type: string;
+
+    @ApiProperty({ description: 'Social Media URL', example: '[Instagram URL]' })
+    @IsString()
+    social_media_url: string;
+
+    @ApiProperty({ description: 'Followers', example: '16k' })
+    @IsString()
+    followers: string;
+}
+
+export class CreateAccountDto {
+    @ApiProperty({ description: 'Platform ID' })
+    @Transform(({ value }) => parseInt(value))
+    @IsNumber()
+    platform_id: number;
+
+    @ApiProperty({ description: 'Influencer ID' })
+    @Transform(({ value }) => parseInt(value))
+    @IsNumber()
+    influencer_id: number;
+
+    @ApiProperty({ description: 'Account Type', example: 'Social Media' })
+    @IsString()
+    account_type: string;
+
+    @ApiProperty({ description: 'Social Media URL', example: '[Instagram URL]' })
+    @IsString()
+    social_media_url: string;
+
+    @ApiProperty({ description: 'Followers', example: '16k' })
+    @IsString()
+    followers: string;
+}
+
+export class UpdateAccountDto {
+    @ApiProperty({ description: 'Platform ID', required: false })
+    @IsOptional()
+    @Transform(({ value }) => parseInt(value))
+    @IsNumber()
+    platform_id?: number;
+
+    @ApiProperty({ description: 'Influencer ID', required: false })
+    @IsOptional()
+    @Transform(({ value }) => parseInt(value))
+    @IsNumber()
+    influencer_id?: number;
+
+    @ApiProperty({ description: 'Account Type', example: 'Social Media', required: false })
+    @IsOptional()
+    @IsString()
+    account_type?: string;
+
+    @ApiProperty({ description: 'Social Media URL', example: '[Instagram URL]', required: false })
+    @IsOptional()
+    @IsString()
+    social_media_url?: string;
+
+    @ApiProperty({ description: 'Followers', example: '16k', required: false })
+    @IsOptional()
+    @IsString()
+    followers?: string;
+}
+
 export class GetInfluencerDto {
     @ApiProperty({ description: 'Influencer ID', example: '1' })
     @IsNumber()
@@ -72,7 +151,7 @@ export class GetInfluencerDto {
     @IsNumber()
     invite_count: number;
 
-    @ApiProperty({ description: 'Accounts' })
+    @ApiProperty({ description: 'Accounts', isArray: true, type: GetAccountDto })
     @IsArray()
     accounts: GetAccountDto[]
 }
@@ -239,68 +318,4 @@ export class UpdateInfluencerDto {
     @Transform(({ value }) => parseInt(value))
     @IsNumber()
     invite_count?: number;
-}
-
-export class GetAccountDto {
-    @ApiProperty({ description: 'Account ID', example: '1' })
-    @IsNumber()
-    account_id: number;
-
-    @ApiProperty({ description: 'Platform Name', example: 'Instagram' })
-    @IsString()
-    platform_name: string;
-
-    @ApiProperty({ description: 'Account Type', example: 'Social Media' })
-    @IsString()
-    account_type: string;
-
-    @ApiProperty({ description: 'Social Media URL', example: '[Instagram URL]' })
-    @IsString()
-    social_media_url: string;
-
-    @ApiProperty({ description: 'Followers', example: '16k' })
-    @IsString()
-    followers: string;
-}
-
-export class CreateAccountDto {
-    @ApiProperty({ description: 'Platform ID' })
-    @Transform(({ value }) => parseInt(value))
-    @IsNumber()
-    platform_id: number;
-
-    @ApiProperty({ description: 'Account Type', example: 'Social Media' })
-    @IsString()
-    account_type: string;
-
-    @ApiProperty({ description: 'Social Media URL', example: '[Instagram URL]' })
-    @IsString()
-    social_media_url: string;
-
-    @ApiProperty({ description: 'Followers', example: '16k' })
-    @IsString()
-    followers: string;
-}
-
-export class UpdateAccountDto {
-    @ApiProperty({ description: 'Platform ID', required: false })
-    @IsOptional()
-    @Transform(({ value }) => parseInt(value))
-    @IsNumber()
-    platform_id?: number;
-
-    @ApiProperty({ description: 'Account Type', example: 'Social Media', required: false })
-    @IsOptional()
-    @IsString()
-    account_type?: string;
-
-    @ApiProperty({ description: 'Social Media URL', example: '[Instagram URL]', required: false })
-    @IsOptional()
-    @IsString()
-    social_media_url?: string;
-
-    @ApiProperty({ description: 'Followers', example: '16k', required: false })
-    @IsOptional()
-    @IsString()
-    followers?: string;
 }
