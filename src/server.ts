@@ -62,7 +62,7 @@ async function bootstrap(): Promise<void> {
     app.useGlobalInterceptors(logInterceptor);
     app.useGlobalPipes(new ValidationPipe({ transform: true }));
     await app.register(multipart);
-    await app.listen(process.env.API_PORT || API_DEFAULT_PORT);
+    await app.listen(process.env.API_PORT || API_DEFAULT_PORT, '0.0.0.0');
 }
 
 /**
