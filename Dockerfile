@@ -29,7 +29,8 @@ RUN npx prisma generate \
 
 # ---
 
-FROM node:20-alpine
+# FROM node:20-alpine
+FROM node:20-alpine3.17
 
 ENV NODE_ENV production
 
