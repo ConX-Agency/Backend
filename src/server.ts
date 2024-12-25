@@ -60,7 +60,11 @@ async function bootstrap(): Promise<void> {
     if (!process.env.SWAGGER_ENABLE || process.env.SWAGGER_ENABLE === '1') createSwagger(app);
     const logInterceptor = app.select(CommonModule).get(LogInterceptor);
     app.useGlobalInterceptors(logInterceptor);
-    app.useGlobalPipes(new ValidationPipe({ transform: true }));
+    app.useGlobalPipes(new ValidationPipe({
+        transform: true,
+        // whitelist: true,               // Strip unknown properties
+        // forbidNonWhitelisted: true,    // Throw an error for unknown properties 
+    }));
     await app.register(multipart);
     await app.listen(process.env.API_PORT || API_DEFAULT_PORT, '0.0.0.0');
 }

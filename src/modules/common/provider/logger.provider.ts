@@ -1,6 +1,6 @@
 import * as winston from 'winston';
 
-export class LoggerService {
+export class LoggerProvider {
     private readonly instance: winston.Logger;
     public constructor() {
         const format = this.isProductionEnv() ?

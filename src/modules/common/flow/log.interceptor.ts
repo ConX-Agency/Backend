@@ -3,12 +3,12 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
-import { LoggerService } from '../provider';
+import { LoggerProvider } from '../provider';
 
 @Injectable()
 export class LogInterceptor implements NestInterceptor {
     public constructor(
-        private readonly logger: LoggerService
+        private readonly logger: LoggerProvider
     ) { }
 
     public intercept(context: ExecutionContext, next: CallHandler): Observable<FastifyReply> {

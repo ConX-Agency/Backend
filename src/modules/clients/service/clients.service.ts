@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { ExcelProvider, PrismaService } from '../../common';
+import { ExcelProvider, PrismaService, ValidatorProvider } from '../../common';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { CustomThrowError } from '../../common/controller/config';
-import { CreateClientDto, CreateClientLocationDto, GetClientDto, GetClientLocationDto, UpdateClientDto } from '../model/clients.dto';
+import { CreateClientDto, CreateClientLocationDto, GetClientDto, GetClientLocationDto, UpdateClientDto, UpdateClientLocationDto } from '../model/clients.dto';
 import { MemoryStorageFile } from 'nest-file-fastify';
 import { ClientExcel } from '../../common/model/excel';
 import * as XLSX from 'xlsx';
@@ -96,6 +96,9 @@ export class ClientsService {
 
             const { addresses, ...others } = createClientData;
             const addressesData = JSON.parse(addresses) as CreateClientLocationDto[];
+
+            for (let address of addressesData) await ValidatorProvider.validateData(address, CreateClientLocationDto);
+
             const newClient = await this.prismaService.clients.create({ data: others });
             for (let i = 0; i < addressesData.length; i++) {
                 const newAddressData = addressesData[i];
@@ -177,6 +180,83 @@ export class ClientsService {
     }
 
     /**
+     * Create a new client location record
+     *
+     * @param data Client location details
+     * @returns New client location data created in the database
+     */
+    public async createAddress(createClientLocationData: CreateClientLocationDto): Promise<GetClientLocationDto> {
+        try {
+            const newClientLocation: GetClientLocationDto = await this.prismaService.clients_Location.create({
+                data: { ...createClientLocationData, client_id: createClientLocationData.client_id! }
+            });
+            return newClientLocation;
+        } catch (error) {
+            if (error instanceof PrismaClientKnownRequestError) {
+                // known prisma client error
+                throw new CustomThrowError(
+                    error.code,
+                    error.message,
+                    error.meta
+                );
+            }
+            // unknown error
+            throw new CustomThrowError(
+                "-1",
+                error.message,
+                error.meta
+            );
+        }
+    }
+
+    /**
+     * Update client location record
+     *
+     * @param clientLocationId Client location id
+     * @param updateClientLocationData New client location details
+     * @returns New client location data updated in the database
+     */
+    public async updateAddress(
+        clientLocationId: number,
+        updateClientLocationData: UpdateClientLocationDto,
+    ): Promise<GetClientLocationDto | null> {
+        try {
+            const existingClientLocation = await this.prismaService.clients_Location.findUnique({ where: { client_location_id: clientLocationId } }) as Clients_Location;
+            if (!existingClientLocation) return null;
+            const updatedClientLocation = await this.prismaService.clients_Location.update({ where: { client_location_id: clientLocationId }, data: updateClientLocationData }) as Clients_Location;
+            return updatedClientLocation as GetClientLocationDto;
+        } catch (error) {
+            if (error instanceof PrismaClientKnownRequestError) {
+                // known prisma client error
+                throw new CustomThrowError(
+                    error.code,
+                    error.message,
+                    error.meta
+                );
+            }
+            // unknown error
+            throw new CustomThrowError(
+                "-1",
+                error.message,
+                error.meta
+            );
+        }
+    }
+
+    /**
+     * Delete client record
+     *
+     * @param clientLocationId Client id
+     * @returns Status of client deletion
+     */
+    public async deleteAddress(clientLocationId: number): Promise<boolean> {
+        const existingClientLocation = await this.prismaService.clients_Location.findUnique({ where: { client_location_id: clientLocationId } });
+        if (!existingClientLocation) return false;
+        await this.prismaService.clients_Location.delete({ where: { client_location_id: clientLocationId } });
+        return true;
+    }
+
+    /**
      * Bulk create client records from excel
      * 
      * @param file Excel file that contains client data
@@ -200,11 +280,14 @@ export class ClientsService {
                 const clientData = {
                     company_name: data[ExcelProvider.CLIENT_COMPANY_NAME],
                     person_in_charge_name: data[ExcelProvider.CLIENT_PIC_NAME],
+                    person_in_charge_email: data[ExcelProvider.CLIENT_PIC_EMAIL],
                     company_email: data[ExcelProvider.CLIENT_COMPANY_EMAIL],
                     contact_number: data[ExcelProvider.CLIENT_CONTACT].toString(),
-                    additional_contact_number: data[ExcelProvider.CLIENT_ADDITIONAL_CONTACT] ?? "-",
+                    alt_contact_number: data[ExcelProvider.CLIENT_ADDITIONAL_CONTACT] ? data[ExcelProvider.CLIENT_ADDITIONAL_CONTACT].toString() : "-",
                     industry: data[ExcelProvider.CLIENT_INDUSTRY] ?? "-",
-                    category: data[ExcelProvider.CLIENT_CATEGORY] ?? "-"
+                    cuisine_type: data[ExcelProvider.CLIENT_CUISINE_TYPE] ?? "-",
+                    tnc_consent: data[ExcelProvider.CLIENT_TNC_CONSENT].toString().toLowerCase() === "true",
+                    status: data[ExcelProvider.CLIENT_STATUS],
                 }
                 const newClient = await this.prismaService.clients.create({ data: clientData }) as GetClientDto;
 

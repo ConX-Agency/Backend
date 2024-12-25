@@ -6,11 +6,14 @@ export class ClientsInput extends PickType(
     [
         'company_name',
         'person_in_charge_name',
+        'person_in_charge_email',
         'company_email',
         'contact_number',
-        'additional_contact_number',
+        'alt_contact_number',
         'industry',
-        'category'
+        'cuisine_type',
+        'tnc_consent',
+        'status'
     ] as const
 ) { }
 

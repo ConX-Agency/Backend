@@ -1,12 +1,12 @@
 import { BadRequestException, Body, Controller, Delete, Get, HttpStatus, Param, ParseIntPipe, Patch, Post, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { LoggerService } from '../../common';
+import { LoggerProvider } from '../../common';
 import { ClientsService } from '../service';
-import { ClientsPipe } from '../flow';
+import { ClientsLocationPipe, ClientsPipe } from '../flow';
 import { CustomThrowError } from '../../common/controller/config';
 import { ErrorData } from '../../common/model/config';
 import { FileFieldsInterceptor, MemoryStorageFile, UploadedFiles } from 'nest-file-fastify';
-import { CreateClientDto, GetClientDto, UpdateClientDto } from '../model/clients.dto';
+import { CreateClientDto, CreateClientLocationDto, GetClientDto, GetClientLocationDto, UpdateClientDto, UpdateClientLocationDto } from '../model/clients.dto';
 import { AdminClientGuard, UserGuard } from '../../common/security/user.guard';
 
 @Controller('clients')
@@ -14,7 +14,7 @@ import { AdminClientGuard, UserGuard } from '../../common/security/user.guard';
 @ApiBearerAuth()
 export class ClientsController {
     public constructor(
-        private readonly logger: LoggerService,
+        private readonly logger: LoggerProvider,
         private readonly clientsService: ClientsService
     ) { }
 
@@ -64,11 +64,11 @@ export class ClientsController {
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
     @UseInterceptors(FileFieldsInterceptor([{ name: 'image', maxCount: 1 }]))
     public async register(
-        @Body(ClientsPipe) registerClientDto: CreateClientDto,
+        @Body(ClientsPipe) createClientData: CreateClientDto,
         @UploadedFiles() files: { image?: MemoryStorageFile },
     ): Promise<GetClientDto> {
         try {
-            const newClient = await this.clientsService.create(registerClientDto);
+            const newClient = await this.clientsService.create(createClientData);
             this.logger.info(`Registered new client with ID ${newClient.client_id}!`);
             return newClient;
         } catch (error: unknown) {
@@ -124,11 +124,11 @@ export class ClientsController {
     @UseInterceptors(FileFieldsInterceptor([{ name: 'image', maxCount: 1 }]))
     public async update(
         @Param('clientId', ParseIntPipe) clientId: number,
-        @Body() updateClientDto: UpdateClientDto,
+        @Body() updateClientData: UpdateClientDto,
         @UploadedFiles() files: { image?: MemoryStorageFile },
     ): Promise<GetClientDto> {
         try {
-            const updatedClient = await this.clientsService.update(clientId, updateClientDto);
+            const updatedClient = await this.clientsService.update(clientId, updateClientData);
             if (!updatedClient) throw new BadRequestException(`Client with ID ${clientId} not found!`);
             return updatedClient;
         } catch (error: unknown) {
@@ -151,6 +151,76 @@ export class ClientsController {
         try {
             const success = await this.clientsService.delete(clientId);
             if (!success) throw new BadRequestException(`Client with ID ${clientId} not found`);
+            return;
+        } catch (error: unknown) {
+            if (error instanceof CustomThrowError) {
+                const { message, meta } = error;
+                throw new BadRequestException({ message, meta });
+            }
+            throw new BadRequestException(error);
+        }
+    }
+
+    @Post('/location')
+    @UseGuards(AdminClientGuard)
+    @ApiConsumes('multipart/form-data')
+    @ApiOperation({ summary: 'Add new client location' })
+    @ApiResponse({ status: HttpStatus.CREATED, type: CreateClientLocationDto })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
+    @UseInterceptors(FileFieldsInterceptor([{ name: 'image', maxCount: 1 }]))
+    public async addLocation(
+        @Body(ClientsLocationPipe) createClientLocationData: CreateClientLocationDto,
+        @UploadedFiles() files: { image?: MemoryStorageFile },
+    ): Promise<GetClientLocationDto> {
+        try {
+            const newClientLocation = await this.clientsService.createAddress(createClientLocationData);
+            this.logger.info(`Added new client location with ID ${newClientLocation.client_location_id}!`);
+            return newClientLocation;
+        } catch (error: unknown) {
+            if (error instanceof CustomThrowError) {
+                const { message, meta } = error;
+                throw new BadRequestException({ message, meta });
+            }
+            throw new BadRequestException(error);
+        }
+    }
+
+    @Patch('/location/:clientLocationId')
+    @UseGuards(AdminClientGuard)
+    @ApiConsumes('multipart/form-data')
+    @ApiOperation({ summary: 'Update client location by ID' })
+    @ApiResponse({ status: HttpStatus.OK, type: UpdateClientLocationDto, description: 'Update client location', })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData, })
+    @UseInterceptors(FileFieldsInterceptor([{ name: 'image', maxCount: 1 }]))
+    public async updateLocation(
+        @Param('clientLocationId', ParseIntPipe) clientLocationId: number,
+        @Body() updateClientLocationData: UpdateClientLocationDto,
+        @UploadedFiles() files: { image?: MemoryStorageFile },
+    ): Promise<GetClientLocationDto> {
+        try {
+            const updatedClientLocation = await this.clientsService.updateAddress(clientLocationId, updateClientLocationData);
+            if (!updatedClientLocation) throw new BadRequestException(`Client location with ID ${clientLocationId} not found!`);
+            return updatedClientLocation;
+        } catch (error: unknown) {
+            if (error instanceof CustomThrowError) {
+                const { message, meta } = error;
+                throw new BadRequestException({ message, meta });
+            }
+            throw new BadRequestException(error);
+        }
+    }
+
+    @Delete('/location/:clientLocationId')
+    @UseGuards(AdminClientGuard)
+    @ApiOperation({ summary: 'Delete client location by ID' })
+    @ApiResponse({ status: HttpStatus.OK, description: 'Delete client location' })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData, })
+    public async deleteLocation(
+        @Param('clientLocationId', ParseIntPipe) clientLocationId: number
+    ): Promise<void> {
+        try {
+            const success = await this.clientsService.delete(clientLocationId);
+            if (!success) throw new BadRequestException(`Client location with ID ${clientLocationId} not found`);
             return;
         } catch (error: unknown) {
             if (error instanceof CustomThrowError) {

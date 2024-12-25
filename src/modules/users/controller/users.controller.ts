@@ -1,6 +1,6 @@
 import { BadRequestException, Body, Controller, Delete, Get, HttpStatus, Param, ParseIntPipe, Patch, Post, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { LoggerService } from '../../common';
+import { LoggerProvider } from '../../common';
 import { UsersService } from '../service';
 import { UsersPipe } from '../flow';
 import { CustomThrowError } from '../../common/controller/config';
@@ -15,7 +15,7 @@ import { UploadedFiles } from 'nest-file-fastify';
 @ApiBearerAuth()
 export class UsersController {
     public constructor(
-        private readonly logger: LoggerService,
+        private readonly logger: LoggerProvider,
         private readonly usersService: UsersService
     ) { }
 

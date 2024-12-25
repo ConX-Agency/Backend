@@ -2,7 +2,7 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "linux-musl", "linux-musl-openssl-3.0.x"]
 }
 
@@ -24,16 +24,19 @@ model Users {
 }
 
 model Clients {
-  client_id                 Int                @id @default(autoincrement())
-  company_name              String             @unique
-  person_in_charge_name     String
-  company_email             String             @unique
-  contact_number            String
-  additional_contact_number String
-  industry                  String
-  category                  String
-  campaigns                 Campaign[]
-  clients_location          Clients_Location[]
+  client_id              Int                @id @default(autoincrement())
+  company_name           String             @unique
+  person_in_charge_name  String
+  person_in_charge_email String
+  company_email          String             @unique
+  contact_number         String
+  alt_contact_number     String
+  industry               String
+  cuisine_type           String
+  tnc_consent            Boolean            @default(false)
+  status                 String
+  campaigns              Campaign[]
+  addresses              Clients_Location[]
 }
 
 model Clients_Location {
