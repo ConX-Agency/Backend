@@ -23,6 +23,17 @@ model Users {
   type           String
 }
 
+model Clients_Location {
+  client_location_id Int     @id @default(autoincrement())
+  client_id          Int
+  client             Clients @relation(fields: [client_id], references: [client_id], onDelete: Cascade)
+  country            String
+  city               String
+  state              String
+  postcode           String
+  address            String
+}
+
 model Clients {
   client_id              Int                @id @default(autoincrement())
   company_name           String             @unique
@@ -39,54 +50,40 @@ model Clients {
   addresses              Clients_Location[]
 }
 
-model Clients_Location {
-  client_location_id Int     @id @default(autoincrement())
-  client_id          Int
-  client             Clients @relation(fields: [client_id], references: [client_id], onDelete: Cascade)
-  country            String
-  city               String
-  state              String
-  postcode           String
-  address            String
+model Accounts {
+  account_id             Int        @id @default(autoincrement())
+  social_media_url       String
+  follower_count         Int        @default(1)
+  audience_focus_country String     @default("")
+  platform_name          String
+  platform_focus         String
+  influencer_id          Int
+  influencer             Influencer @relation(fields: [influencer_id], references: [influencer_id], onDelete: Cascade)
 }
 
 model Influencer {
-  influencer_id             Int                    @id @default(autoincrement())
-  full_name                 String
-  preferred_name            String
-  contact_number            String
-  email_address             String                 @unique
-  additional_contact_number String
-  country                   String
-  city                      String
-  state                     String
-  postcode                  String
-  multiple_countries        Boolean?
-  additional_country        String?
-  industry                  String
-  consent_whatsapp_group    Boolean                @default(false)
-  whatsapp_invited          Boolean                @default(false)
-  community                 Boolean                @default(false)
-  invite_count              Int                    @default(0)
-  influencer_campaign       Influencers_Campaign[]
-  accounts                  Accounts[]
-}
-
-model Accounts {
-  account_id       Int        @id @default(autoincrement())
-  social_media_url String
-  followers        String
-  account_type     String
-  platform         Platform   @relation(fields: [platform_id], references: [platform_id], onDelete: Cascade)
-  platform_id      Int
-  influencer_id    Int
-  influencer       Influencer @relation(fields: [influencer_id], references: [influencer_id], onDelete: Cascade)
-}
-
-model Platform {
-  platform_id   Int        @id @default(autoincrement())
-  platform_name String
-  accounts      Accounts[]
+  influencer_id      Int                    @id @default(autoincrement())
+  full_name          String
+  preferred_name     String
+  contact_number     String
+  alt_contact_number String
+  email_address      String                 @unique
+  country            String
+  state              String
+  city               String
+  postcode           String
+  address            String
+  multiple_countries Boolean?               @default(false)
+  additional_country String?                @default("")
+  whatsapp_consent   Boolean
+  whatsapp_invited   Boolean
+  community_invited  Boolean
+  industry           String
+  invite_count       Int                    @default(0)
+  tnc_consent        Boolean                @default(false)
+  status             String
+  platforms          Accounts[]
+  campaigns          Influencers_Campaign[]
 }
 
 model Campaign {

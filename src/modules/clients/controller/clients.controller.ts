@@ -174,6 +174,7 @@ export class ClientsController {
     ): Promise<GetClientLocationDto> {
         try {
             const newClientLocation = await this.clientsService.createAddress(createClientLocationData);
+            if (!newClientLocation) throw new BadRequestException(`Client does not exist!`);
             this.logger.info(`Added new client location with ID ${newClientLocation.client_location_id}!`);
             return newClientLocation;
         } catch (error: unknown) {

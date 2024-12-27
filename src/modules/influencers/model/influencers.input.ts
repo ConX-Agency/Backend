@@ -8,28 +8,32 @@ export class InfluencersInput extends PickType(
         'preferred_name',
         'contact_number',
         'email_address',
-        'additional_contact_number',
+        'alt_contact_number',
         'country',
         'city',
         'state',
         'postcode',
+        'address',
         'multiple_countries',
         'additional_country',
-        'industry',
-        'consent_whatsapp_group',
+        'whatsapp_consent',
         'whatsapp_invited',
-        'community',
-        'invite_count'
+        'community_invited',
+        'industry',
+        'invite_count',
+        'tnc_consent',
+        'status'
     ] as const
 ) { }
 
 export class AccountsInput extends PickType(
     AccountsData,
     [
-        'platform_id',
         'social_media_url',
-        'followers',
-        'account_type',
-        'influencer_id'
+        'follower_count',
+        'platform_name',
+        'platform_focus',
+        'influencer_id',
+        'audience_focus_country'
     ] as const
 ) { }

@@ -185,10 +185,13 @@ export class ClientsService {
      * @param data Client location details
      * @returns New client location data created in the database
      */
-    public async createAddress(createClientLocationData: CreateClientLocationDto): Promise<GetClientLocationDto> {
+    public async createAddress(createClientLocationData: CreateClientLocationDto): Promise<GetClientLocationDto | null> {
         try {
+            const existingClient = await this.prismaService.clients.findUnique({ where: { client_id: createClientLocationData.client_id } }) as Clients;
+            if (!existingClient) return null;
+
             const newClientLocation: GetClientLocationDto = await this.prismaService.clients_Location.create({
-                data: { ...createClientLocationData, client_id: createClientLocationData.client_id! }
+                data: { ...createClientLocationData, client_id: existingClient.client_id }
             });
             return newClientLocation;
         } catch (error) {
@@ -223,6 +226,7 @@ export class ClientsService {
         try {
             const existingClientLocation = await this.prismaService.clients_Location.findUnique({ where: { client_location_id: clientLocationId } }) as Clients_Location;
             if (!existingClientLocation) return null;
+
             const updatedClientLocation = await this.prismaService.clients_Location.update({ where: { client_location_id: clientLocationId }, data: updateClientLocationData }) as Clients_Location;
             return updatedClientLocation as GetClientLocationDto;
         } catch (error) {
