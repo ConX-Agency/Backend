@@ -22,7 +22,7 @@ export class UsersController {
     @Get()
     @UseGuards(UserGuard)
     @ApiOperation({ summary: 'Get all users' })
-    @ApiResponse({ status: HttpStatus.OK, isArray: true, type: Array<GetUserDto>, description: "Get All Users" })
+    @ApiResponse({ status: HttpStatus.OK, isArray: true, type: GetUserDto, description: "Get All Users" })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
     public async getAll(): Promise<GetUserDto[]> {
         try {
@@ -176,7 +176,7 @@ export class UsersController {
     @Post('/client/login')
     @ApiConsumes('multipart/form-data')
     @ApiOperation({ summary: 'Login client user' })
-    @ApiResponse({ status: HttpStatus.CREATED, type: LoginDto, description: 'Login client user' })
+    @ApiResponse({ status: HttpStatus.CREATED, type: LoginUserDataDto, description: 'Login client user' })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
     @UseInterceptors(FileFieldsInterceptor([{ name: 'image', maxCount: 1 }]))
     public async loginClient(
@@ -199,7 +199,7 @@ export class UsersController {
     @Post('/admin/login')
     @ApiConsumes('multipart/form-data')
     @ApiOperation({ summary: 'Login admin user' })
-    @ApiResponse({ status: HttpStatus.CREATED, type: LoginDto, description: 'Login admin user' })
+    @ApiResponse({ status: HttpStatus.CREATED, type: LoginUserDataDto, description: 'Login admin user' })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
     @UseInterceptors(FileFieldsInterceptor([{ name: 'image', maxCount: 1 }]))
     public async loginAdmin(
@@ -222,7 +222,7 @@ export class UsersController {
     @Post('/influencer/login')
     @ApiConsumes('multipart/form-data')
     @ApiOperation({ summary: 'Login influencer user' })
-    @ApiResponse({ status: HttpStatus.CREATED, type: LoginDto, description: 'Login influencer user' })
+    @ApiResponse({ status: HttpStatus.CREATED, type: LoginUserDataDto, description: 'Login influencer user' })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorData })
     @UseInterceptors(FileFieldsInterceptor([{ name: 'image', maxCount: 1 }]))
     public async loginInfluencer(
