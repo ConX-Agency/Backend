@@ -2,9 +2,11 @@ import { Controller, Get, UseGuards } from '@nestjs/common';
 import { HealthCheckService, PrismaHealthIndicator } from '@nestjs/terminus';
 
 import { PrismaService } from '../provider';
-import { HealthGuard } from '../security/health.guard';
+import { AdminGuard } from '../security';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('health')
+@ApiBearerAuth()
 export class HealthController {
     public constructor(
         private readonly health: HealthCheckService,
@@ -13,7 +15,7 @@ export class HealthController {
     ) { }
 
     @Get()
-    @UseGuards(HealthGuard)
+    @UseGuards(AdminGuard)
     public async healthCheck() {
         return this.health.check([
             async () => this.database.pingCheck('database', this.prisma),

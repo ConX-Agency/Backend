@@ -248,6 +248,7 @@ export class UsersService {
     public async delete(userId: number): Promise<boolean> {
         const existingUser = await this.prismaService.users.findUnique({ where: { user_id: userId } });
         if (!existingUser) return false;
+
         await this.prismaService.users.delete({ where: { user_id: userId } });
         return true;
     }
@@ -279,7 +280,8 @@ export class UsersService {
                 } as GetUserDto;
                 const token = jwt.sign({ userData }, `${process.env.JWT_SECRET}`, {
                     algorithm: 'HS256',
-                    issuer: `${process.env.JWT_ISSUER}`
+                    issuer: `${process.env.JWT_ISSUER}`,
+                    expiresIn: 3600
                 });
                 return {
                     token,

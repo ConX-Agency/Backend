@@ -26,20 +26,12 @@ export class InfluencersService {
             const influencers = await this.prismaService.influencer.findMany({}) as InfluencersData[];
 
             for (let influencer of influencers) {
-                let accountData: GetAccountDto[] = [];
-                const accounts = await this.prismaService.accounts.findMany({
+                const accounts: GetAccountDto[] = await this.prismaService.accounts.findMany({
                     where: { influencer_id: influencer.influencer_id }
                 });
-
-                for (let account of accounts) {
-                    accountData.push({
-                        ...account,
-                    })
-                }
-
                 influencersData.push({
                     ...influencer,
-                    accounts: accountData
+                    accounts
                 });
             }
 
@@ -70,23 +62,15 @@ export class InfluencersService {
     public async getById(influencerId: number): Promise<GetInfluencerDto | null> {
         try {
             const influencer = await this.prismaService.influencer.findUnique({ where: { influencer_id: influencerId } }) as InfluencersData;
-            const accountsData: GetAccountDto[] = [];
-
             if (!influencer) return null;
-            let accountData: GetAccountDto[] = [];
-            const accounts = await this.prismaService.accounts.findMany({
+
+            const accounts: GetAccountDto[] = await this.prismaService.accounts.findMany({
                 where: { influencer_id: influencer.influencer_id }
             });
 
-            for (let account of accounts) {
-                accountData.push({
-                    ...account
-                })
-            }
-
             return {
                 ...influencer,
-                accounts: accountsData
+                accounts
             } as GetInfluencerDto;
         } catch (error) {
             if (error instanceof PrismaClientKnownRequestError) {
@@ -115,10 +99,10 @@ export class InfluencersService {
     public async create(createInfluencerData: CreateInfluencerDto): Promise<GetInfluencerDto> {
         try {
             const influencerAccounts: GetAccountDto[] = [];
-
             const { accounts, ...others } = createInfluencerData;
             const accountsData = JSON.parse(accounts) as CreateAccountDto[];
 
+            // Check whether the parsed JSON accounts data matches the CreateAccountDto schema
             for (let account of accountsData) await ValidatorProvider.validateData(account, CreateAccountDto);
 
             const newInfluencer = await this.prismaService.influencer.create({ data: others });
@@ -164,6 +148,7 @@ export class InfluencersService {
         try {
             const existingInfluencer = await this.prismaService.influencer.findUnique({ where: { influencer_id: influencerId } }) as Influencer;
             if (!existingInfluencer) return null;
+
             const updatedInfluencer = await this.prismaService.influencer.update({ where: { influencer_id: influencerId }, data: updateInfluencerData }) as Influencer;
             const influencerAccounts = await this.prismaService.accounts.findMany({ where: { influencer_id: influencerId } }) as GetAccountDto[];
             return {
@@ -197,6 +182,7 @@ export class InfluencersService {
     public async delete(influencerId: number): Promise<boolean> {
         const existingInfluencer = await this.prismaService.influencer.findUnique({ where: { influencer_id: influencerId } });
         if (!existingInfluencer) return false;
+
         await this.prismaService.influencer.delete({ where: { influencer_id: influencerId } });
         return true;
     }
@@ -276,6 +262,7 @@ export class InfluencersService {
     public async deleteAccount(accountId: number): Promise<boolean> {
         const existingAccount = await this.prismaService.accounts.findUnique({ where: { account_id: accountId } }) as Accounts;
         if (!existingAccount) return false;
+
         await this.prismaService.accounts.delete({ where: { account_id: accountId } });
         return true;
     }

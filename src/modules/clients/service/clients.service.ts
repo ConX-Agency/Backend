@@ -61,6 +61,7 @@ export class ClientsService {
         try {
             const client = await this.prismaService.clients.findUnique({ where: { client_id: clientId } }) as ClientsData;
             if (!client) return null;
+
             const addresses: GetClientLocationDto[] = await this.prismaService.clients_Location.findMany({ where: { client_id: client.client_id } });
             return {
                 ...client,
@@ -93,10 +94,10 @@ export class ClientsService {
     public async create(createClientData: CreateClientDto): Promise<GetClientDto> {
         try {
             const clientAddresses: GetClientLocationDto[] = [];
-
             const { addresses, ...others } = createClientData;
             const addressesData = JSON.parse(addresses) as CreateClientLocationDto[];
 
+            // Check whether the parsed JSON addresses data matches the CreateClientLocationDto schema
             for (let address of addressesData) await ValidatorProvider.validateData(address, CreateClientLocationDto);
 
             const newClient = await this.prismaService.clients.create({ data: others });
@@ -142,6 +143,7 @@ export class ClientsService {
         try {
             const existingClient = await this.prismaService.clients.findUnique({ where: { client_id: clientId } }) as Clients;
             if (!existingClient) return null;
+
             const updatedClient = await this.prismaService.clients.update({ where: { client_id: clientId }, data: updateClientData }) as Clients;
             const clientAddresses = await this.prismaService.clients_Location.findMany({ where: { client_id: clientId } }) as GetClientLocationDto[];
             return {
@@ -175,6 +177,7 @@ export class ClientsService {
     public async delete(clientId: number): Promise<boolean> {
         const existingClient = await this.prismaService.clients.findUnique({ where: { client_id: clientId } });
         if (!existingClient) return false;
+
         await this.prismaService.clients.delete({ where: { client_id: clientId } });
         return true;
     }
@@ -256,6 +259,7 @@ export class ClientsService {
     public async deleteAddress(clientLocationId: number): Promise<boolean> {
         const existingClientLocation = await this.prismaService.clients_Location.findUnique({ where: { client_location_id: clientLocationId } });
         if (!existingClientLocation) return false;
+
         await this.prismaService.clients_Location.delete({ where: { client_location_id: clientLocationId } });
         return true;
     }
@@ -295,7 +299,7 @@ export class ClientsService {
                 }
                 const newClient = await this.prismaService.clients.create({ data: clientData }) as GetClientDto;
 
-                // Assume the Excel file only has 1 address for client
+                // Assuming that the Excel file has only 1 address for client
                 const address = data[ExcelProvider.CLIENT_ADDRESS];
                 const city = data[ExcelProvider.CLIENT_CITY] ?? "-";
                 const country = data[ExcelProvider.CLIENT_COUNTRY];

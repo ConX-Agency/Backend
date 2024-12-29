@@ -3,13 +3,13 @@ import * as jwt from 'jsonwebtoken';
 import { GetUserDto } from '../../users/model/users.dto';
 
 export function extractTokenPayload(request: FastifyRequest): GetUserDto | null {
-    const header = request.headers.authorization;
-    if (!header || !header.startsWith('Bearer ')) return null;
-
-    const [, tokenChunk] = header.split(' ');
-    if (!tokenChunk) return null;
-
     try {
+        const header = request.headers.authorization;
+        if (!header || !header.startsWith('Bearer ')) return null;
+
+        const [, tokenChunk] = header.split(' ');
+        if (!tokenChunk) return null;
+
         const env = process.env;
         const payload = jwt.verify(tokenChunk, `${env.JWT_SECRET}`, {
             algorithms: ['HS256'],
