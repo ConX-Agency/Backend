@@ -4,6 +4,7 @@ import { CommonModule } from './common';
 import { ClientsModule } from './clients/clients.module';
 import { InfluencersModule } from './influencers/influencers.module';
 import { UsersModule } from './users/users.module';
+import { CampaignsModule } from './campaigns/campaigns.module';
 
 @Module({
     imports: [
@@ -11,6 +12,7 @@ import { UsersModule } from './users/users.module';
         ClientsModule,
         InfluencersModule,
         UsersModule,
+        CampaignsModule
     ]
 })
 export class ApplicationModule { }

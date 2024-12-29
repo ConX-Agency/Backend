@@ -87,44 +87,42 @@ model Influencer {
 }
 
 model Campaign {
-  campaign_id          Int                    @id @default(autoincrement())
-  client_id            Int
-  campaign_name        String
-  start_date           DateTime
-  end_date             DateTime
-  status               String
-  max_influencers      Int
-  min_influencers      Int
-  kpi_status           String
-  client               Clients                @relation(fields: [client_id], references: [client_id], onDelete: Cascade)
-  offers_card          Offers_Card[]
-  influencers_campaign Influencers_Campaign[]
+  campaign_id                 Int                    @id @default(autoincrement())
+  client_id                   Int
+  campaign_name               String
+  food_offering               String
+  campaign_address            String
+  package                     String
+  feedback                    String
+  mx_pax                      Int
+  booking_availability        String
+  availability_public_holiday String
+  start_date                  DateTime
+  end_date                    DateTime
+  is_halal                    Boolean
+  slots                       Int
+  slot_status                 String
+  is_result                   Boolean
+  campaign_status             String
+  client                      Clients                @relation(fields: [client_id], references: [client_id], onDelete: Cascade)
+  influencers_campaign        Influencers_Campaign[]
 }
 
 model Influencers_Campaign {
   influencer_campaign_id   Int        @id @default(autoincrement())
   campaign_id              Int
   influencer_id            Int
-  completed_instapost      Int
-  completed_tiktokpost     Int
-  completed_googlereview   Int
-  completed_redpost        Int
-  status                   String
-  message_sent_date        DateTime
+  campaign_name            String
+  full_name                String
+  booking_datetime         DateTime
+  pax_no                   Int
+  type                     String
+  social_media_handler     String
+  is_due                   Boolean
+  social_media_post        String
+  review_posted            Boolean
+  is_completed             Boolean
   influencer_response_date DateTime
   influencer               Influencer @relation(fields: [influencer_id], references: [influencer_id], onDelete: Cascade)
   campaign                 Campaign   @relation(fields: [campaign_id], references: [campaign_id], onDelete: Cascade)
-}
-
-model Offers_Card {
-  offer_card_id            Int      @id @default(autoincrement())
-  campaign_id              Int
-  clients_location_id      Int
-  offer_type               String
-  offer_description        String
-  services_required        String
-  key_message              String
-  food_products_to_feature String
-  max_booking_pax          Int
-  campaign                 Campaign @relation(fields: [campaign_id], references: [campaign_id], onDelete: Cascade)
 }
