@@ -94,7 +94,7 @@ model Campaign {
   campaign_address            String
   package                     String
   feedback                    String
-  mx_pax                      Int
+  max_pax                     Int
   booking_availability        String
   availability_public_holiday String
   start_date                  DateTime
