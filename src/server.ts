@@ -5,6 +5,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ApplicationModule } from './modules/app.module';
 import { CommonModule, LogInterceptor } from './modules/common';
 import multipart from '@fastify/multipart';
+import cors from '@fastify/cors';
 
 /**
  * these are API defaults that can be changed using environment variables,
@@ -65,6 +66,12 @@ async function bootstrap(): Promise<void> {
         // whitelist: true,               // Strip unknown properties
         // forbidNonWhitelisted: true,    // Throw an error for unknown properties 
     }));
+
+    await app.register(cors, {
+        origin: '*',
+        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    });
+
     await app.register(multipart);
     await app.listen(process.env.API_PORT || API_DEFAULT_PORT, '0.0.0.0');
 }
