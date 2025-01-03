@@ -1,16 +1,18 @@
 import { Module } from '@nestjs/common';
 
 import { CommonModule } from '../common';
+import { CampaignsService } from './service';
+import { CampaignsController } from './controller';
 
 @Module({
     imports: [
         CommonModule,
     ],
     providers: [
-        // ClientsService
+        CampaignsService
     ],
     controllers: [
-        // ClientsController
+        CampaignsController
     ],
     exports: []
 })

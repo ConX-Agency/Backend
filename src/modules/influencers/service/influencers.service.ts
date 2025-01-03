@@ -146,10 +146,10 @@ export class InfluencersService {
         updateInfluencerData: UpdateInfluencerDto,
     ): Promise<GetInfluencerDto | null> {
         try {
-            const existingInfluencer = await this.prismaService.influencer.findUnique({ where: { influencer_id: influencerId } }) as Influencer;
+            const existingInfluencer = await this.prismaService.influencer.findUnique({ where: { influencer_id: influencerId } }) as InfluencersData;
             if (!existingInfluencer) return null;
 
-            const updatedInfluencer = await this.prismaService.influencer.update({ where: { influencer_id: influencerId }, data: updateInfluencerData }) as Influencer;
+            const updatedInfluencer = await this.prismaService.influencer.update({ where: { influencer_id: influencerId }, data: updateInfluencerData }) as InfluencersData;
             const influencerAccounts = await this.prismaService.accounts.findMany({ where: { influencer_id: influencerId } }) as GetAccountDto[];
             return {
                 ...updatedInfluencer,

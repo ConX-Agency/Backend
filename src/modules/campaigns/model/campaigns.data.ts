@@ -2,6 +2,7 @@ import { Campaign, Influencers_Campaign } from '@prisma/client';
 
 export class CampaignData {
     public static readonly MAX_LENGTH = 500;
+    public readonly campaign_id: number;
     public readonly client_id: number;
     public readonly campaign_name: string;
     public readonly food_offering: string;
@@ -20,6 +21,7 @@ export class CampaignData {
     public readonly campaign_status: string;
 
     public constructor(entity: Campaign) {
+        this.campaign_id = entity.campaign_id;
         this.client_id = entity.client_id;
         this.campaign_name = entity.campaign_name;
         this.food_offering = entity.food_offering;
@@ -41,6 +43,7 @@ export class CampaignData {
 
 export class InfluencersCampaignData {
     public static readonly MAX_LENGTH = 500;
+    public readonly influencer_campaign_id: number;
     public readonly campaign_id: number;
     public readonly influencer_id: number;
     public readonly campaign_name: string;
@@ -56,6 +59,7 @@ export class InfluencersCampaignData {
     public readonly influencer_response_date: Date;
 
     public constructor(entity: Influencers_Campaign) {
+        this.influencer_campaign_id = entity.influencer_campaign_id;
         this.campaign_id = entity.campaign_id;
         this.influencer_id = entity.influencer_id;
         this.campaign_name = entity.campaign_name;

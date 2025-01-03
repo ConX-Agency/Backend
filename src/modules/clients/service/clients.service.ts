@@ -141,10 +141,10 @@ export class ClientsService {
         updateClientData: UpdateClientDto,
     ): Promise<GetClientDto | null> {
         try {
-            const existingClient = await this.prismaService.clients.findUnique({ where: { client_id: clientId } }) as Clients;
+            const existingClient = await this.prismaService.clients.findUnique({ where: { client_id: clientId } }) as ClientsData;
             if (!existingClient) return null;
 
-            const updatedClient = await this.prismaService.clients.update({ where: { client_id: clientId }, data: updateClientData }) as Clients;
+            const updatedClient = await this.prismaService.clients.update({ where: { client_id: clientId }, data: updateClientData }) as ClientsData;
             const clientAddresses = await this.prismaService.clients_Location.findMany({ where: { client_id: clientId } }) as GetClientLocationDto[];
             return {
                 ...updatedClient,
